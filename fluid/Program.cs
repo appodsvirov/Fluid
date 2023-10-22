@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 class Fluid
 {
@@ -47,41 +46,60 @@ class Fluid
     private double[] s;
     /// <summary>
     /// Массовые коэффициенты каждой ячейки
-    /// m[i*numY + j] -- масса ячейки [i*numY + j]
+    /// <para> m[i*numY + j] -- масса ячейки [i*numY + j] </para>
     /// </summary>
     private double[] m;
     /// <summary>
     /// Новые массовые коэффициенты каждой ячейки после dt 
-    /// newM[i*numY + j] -- масса ячейки [i*numY + j] после dt
+    /// <para>newM[i*numY + j] -- масса ячейки [i*numY + j] после dt</para>
     /// </summary>
     private double[] newM;
     /// <summary>Общее количество ячеек без учета добавочных</summary>
     private int num;
 
-#endregion
+    #endregion
 
-    // из обьекта scene
-    public const double gravity = 9.80665; //gravity: ускорение свободного падения
-    public const double dt = 1.0 / 120.0; //dt: шаг по времени
-    public const int numIters = 100; //  numIters: количество итераций
+    #region Из обьекта scene
+    /// <summary>Ускорение свободного падения</summary>
+    public const double gravity = 9.80665;
+    /// <summary>Шаг по времени</summary>
+    public const double dt = 1.0 / 120.0;
+    /// <summary>Количество итераций</summary>
+    public const int numIters = 100;
+    /// <summary>Параметр сверхрелаксации</summary>
+    public const double overRelaxation = 1.9;
+    /// <summary>Координата препятствия по X </summary>
+    public const double obstacleX = .0;
+    /// <summary>Координата препятствия по Y </summary>
+    public const double obstacleY = .0;
+
     //public const int frameNr = 0;
-    public const double overRelaxation = 1.9; // overRelaxation: параметр сверхрелаксации
-    public const double obstacleX = .0; // obstacleX: координата препятствия по X 
-    public const double obstacleY = .0; //obstacleY: координата препятствия по Y 
     //public bool paused = false;
     //public int sceneNr = 0;
     //public bool showPressure = false;
     //public bool showSmoke = true;
+
+    #endregion
+
+    #region Что за константы?
     public Fluid fluid;
-    public bool Speed = false;
+    public bool Speed = false; 
     public double a = .0;
     public int obstacle = 0;
     public double x_late = .0;
     public double y_late = .0;
 
-    public const int U_FIELD = 0;
-    public const int V_FIELD = 1;
-    public const int S_FIELD = 2;
+    #endregion
+
+    #region enum
+    public enum SearchParams
+    {
+        U_FIELD,
+        V_FIELD, 
+        S_FIELD
+    }
+
+    #endregion
 
     public Fluid(double density, int numX, int numY, int h)
     {
@@ -96,13 +114,18 @@ class Fluid
         this.newV = new double[this.numCells]; 
         this.p = new double[this.numCells]; 
         this.s = new double[this.numCells]; 
-        this.m = new double[this.numCells]; 
         this.newM = new double[this.numCells];
         this.m = Enumerable.Repeat(1.0, this.numCells).ToArray();
         this.num = numX * numY; 
     }
 
-    public void integrate(double dt, double gravity)
+    /// <summary>
+    /// Вычисляет интеграл для ускорения свободного падения.
+    /// Обновляет значения скоростей в зависимости от массового источника
+    /// </summary>
+    /// <param name="dt"></param>
+    /// <param name="gravity"></param>
+    public void Integrate(double dt, double gravity)
     {
         int n = this.numY;
         for (int i = 1; i < this.numX - 1; i++)
@@ -116,12 +139,13 @@ class Fluid
             }
         }
     }
+
     /// <summary>
     /// Выполняет решение уравнения невозмущенности для давления
     /// </summary>
     /// <param name="numIters"></param>
     /// <param name="dt"></param>
-    public void solveIncompressibility(int numIters, double dt)
+    public void SolveIncompressibility(int numIters, double dt)
     {
         int n = this.numY;
         double cp = this.density * this.h / dt;
@@ -156,11 +180,12 @@ class Fluid
             }
         }
     }
+
     /// <summary>
     /// Выполняет экстраполяцию (продление) 
     /// значений скоростей на границах области моделирования.
     /// </summary>
-    public void extrapolate()
+    public void Extrapolate()
     {
         int n = this.numY;
         for (int i = 0; i < this.numX; i++)
@@ -174,16 +199,17 @@ class Fluid
             this.v[(this.numX - 1) * n + j] = this.v[(this.numX - 2) * n + j];
         }
     }
+
     /// <summary>
     /// Возвращает значение поля (скорости) в указанной точке (x, y)
     /// по указанному типу поля (field). 
-    /// Используется линейная интерполяция между ближайшими значениями поля.
+    /// <para>Используется линейная интерполяция между ближайшими значениями поля</para>
     /// </summary>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="field"></param>
     /// <returns></returns>
-    public double sampleField(double x, double y, int field)
+    public double SampleField(double x, double y, SearchParams searchParams)
     {
         int n = this.numY;
         int h = this.h;
@@ -197,11 +223,11 @@ class Fluid
 
         double[] f = new double[this.numCells];
 
-        switch (field)
+        switch (searchParams)
         {
-            case U_FIELD: f = this.u; dy = h2; break;
-            case V_FIELD: f = this.v; dx = h2; break;
-            case S_FIELD: f = this.m; dy = h2; dx = h2; break;
+            case SearchParams.U_FIELD: f = this.u; dy = h2; break;
+            case SearchParams.V_FIELD: f = this.v; dx = h2; break;
+            case SearchParams.S_FIELD: f = this.m; dy = h2; dx = h2; break;
         }
 
         double x0 = Math.Min(Math.Floor((x - dx) * h1), this.numX - 1);
@@ -225,12 +251,12 @@ class Fluid
     }
 
     /// <summary>
-    /// Средняя скорость в направлении X
+    /// Вычисляет среднюю скорость в направлении X
     /// </summary>
-    /// <param name="i"></param>
-    /// <param name="j"></param>
+    /// <param name="i">Столбец</param>
+    /// <param name="j">Строка</param>
     /// <returns></returns>
-    public double avgU (int i, int j)
+    public double AvgU (int i, int j)
     {
         int n = this.numY;
         double u = (this.u[i * n + j - 1] + this.u[i * n + j] + 
@@ -244,13 +270,14 @@ class Fluid
     /// <param name="i"></param>
     /// <param name="j"></param>
     /// <returns></returns>
-    public double avgV (int i, int j)
+    public double AvgV (int i, int j)
     {
         int n = this.numY;
         double v = (this.v[(i - 1) * n + j] + this.v[i * n + j] +
             this.v[(i - 1) * n + j + 1] + this.v[i * n + j + 1]) * 0.25;
         return v;
     }
+
     /// <summary>
     /// Выполняет адвекцию (транспортировку) скоростей по времени dt.
     /// Обновляет значения скоростей в новых ячейках newU и newV 
@@ -258,7 +285,7 @@ class Fluid
     /// Используется линейная интерполяция для получения новых значений скоростей.
     /// </summary>
     /// <param name="dt"></param>
-    public void advectVel(double dt)
+    public void AdvectVel(double dt)
     {
         this.newU = this.u;
         this.newV = this.v;
@@ -279,10 +306,10 @@ class Fluid
                     double x = i * h;
                     double y = j * h + h2;
                     double u = this.u[i * n + j];
-                    double v = this.avgV(i, j);
+                    double v = this.AvgV(i, j);
                     x = x - dt * u;
                     y = y - dt * v;
-                    u = this.sampleField(x, y, U_FIELD);
+                    u = this.SampleField(x, y, SearchParams.U_FIELD);
                     this.newU[i * n + j] = u;
                 }
                 // Вертикальная составляющая (v)
@@ -290,25 +317,25 @@ class Fluid
                 {
                     double x = i * h + h2;
                     double y = j * h;
-                    double u = this.avgU(i, j);
+                    double u = this.AvgU(i, j);
                     double v = this.v[i * n + j];
                     x = x - dt * u;
                     y = y - dt * v;
-                    v = this.sampleField(x, y, V_FIELD);
+                    v = this.SampleField(x, y, SearchParams.V_FIELD);
                     this.newV[i * n + j] = v;
                 }
             }
         }
 
     }
+
     /// <summary>
     /// выполняет адвекцию (транспортировку) дыма (массового источника) для каждой ячейки. 
-    /// Обновляет новые значения массового источника newM на основе текущих 
-    /// значений скоростей u и v. 
+    /// Обновляет новые значения массового источника newM на основе текущих значений скоростей u и v. 
     /// Используется линейная интерполяция для получения новых значений массового источника.
     /// </summary>
     /// <param name="dt"></param>
-    public void advectSmoke(double dt)
+    public void AdvectSmoke(double dt)
     {
 
         this.newM = this.m;
@@ -341,7 +368,7 @@ class Fluid
                     var x = i * h + h2 - dt * u;
                     var y = j * h + h2 - dt * v;    // Направление
 
-                    this.newM[i * n + j] = this.sampleField(x, y, S_FIELD);
+                    this.newM[i * n + j] = this.SampleField(x, y, SearchParams.S_FIELD);
                 }
             }
         }
@@ -356,13 +383,13 @@ class Fluid
     /// <param name="numIters"></param>
     public void Simulate(int numIters) //убрал gravity, dt т.к. они есть в полях
     {
-        integrate(dt, gravity);
+        Integrate(dt, gravity);
         p = Enumerable.Repeat(.0, this.numCells).ToArray();
 
-        solveIncompressibility(numIters, dt);
-        extrapolate();
-        advectVel(dt);
-        advectSmoke(dt);
+        SolveIncompressibility(numIters, dt);
+        Extrapolate();
+        AdvectVel(dt);
+        AdvectSmoke(dt);
     }
 
     #region Вывод + ToString()
@@ -427,7 +454,7 @@ namespace fluid
         static void Main(string[] args)
         {
             Fluid fluid = new Fluid(1000, 10, 10, 100);
-            fluid.Simulate(10, 1);
+            fluid.Simulate(1);
             Console.WriteLine(fluid);
             //foreach (double item in fluid.m)
             //{
