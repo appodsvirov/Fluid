@@ -253,8 +253,8 @@ class Fluid
     /// <summary>
     /// Вычисляет среднюю скорость в направлении X
     /// </summary>
-    /// <param name="i">Столбец</param>
-    /// <param name="j">Строка</param>
+    /// <param name="i">Строка</param>
+    /// <param name="j">Столбец</param>
     /// <returns></returns>
     public double AvgU (int i, int j)
     {
@@ -267,8 +267,8 @@ class Fluid
     /// <summary>
     /// Средняя скорость в направлении Y
     /// </summary>
-    /// <param name="i"></param>
-    /// <param name="j"></param>
+    /// <param name="i">Строка</param>
+    /// <param name="j">Столбец</param>
     /// <returns></returns>
     public double AvgV (int i, int j)
     {
@@ -381,7 +381,7 @@ class Fluid
     /// <param name="dt"></param>
     /// <param name="gravity"></param>
     /// <param name="numIters"></param>
-    public void Simulate(int numIters) //убрал gravity, dt т.к. они есть в полях
+    public void Simulate(int numIters)
     {
         Integrate(dt, gravity);
         p = Enumerable.Repeat(.0, this.numCells).ToArray();
