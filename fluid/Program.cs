@@ -10,23 +10,40 @@ using System.Collections.Generic;
 
 class Fluid
 {
-    private double density; //density: плотность жидкости
-    private int numX; //numX : количество ячеек по оси X 
+    #region comments
+    //~Fluid() { }
+
+    //public void GetM()
+    //{
+    //    foreach (double n in this.m)
+    //    {
+    //        Console.WriteLine(n);
+    //    }
+    //}
+    #endregion
+    /// <summary>
+    /// Плотность жидкости
+    /// </summary>
+    private double density; 
+    /// <summary>
+    /// Количество ячеек по оси X.
+    /// </summary>
+    private int numX;
     private int numY; //numY: количество ячеек по оси Y
     private int numCells; // numCells: общее количество ячеек в системе
     private int h; // h: размер ячейки
-    private List<double> u; // u: скорости в направлении X
-    private List<double> v; // v: скорости в направлении Y
-    private List<double> newU; // newU: новое значение скорости в направлении X
-    private List<double> newV; // newV: новое значение скорости в направлении Y
-    private List<double> p; //p: давление
-    private List<double> s; //s: массовый источник
-    private List<double> m; //m: массовые коэффициенты
-    private List<double> newM;  // newM: новые массовые коэффициенты
+    private double[] u; // u: скорости в направлении X
+    private double[] v; // v: скорости в направлении Y
+    private double[] newU; // newU: новое значение скорости в направлении X
+    private double[] newV; // newV: новое значение скорости в направлении Y
+    private double[] p; //p: давление
+    private double[] s; //s: массовый источник
+    private double[] m; //m: массовые коэффициенты
+    private double[] newM;  // newM: новые массовые коэффициенты
     private int num; //num: общее количество ячеек 
 
     // из обьекта scene
-    public const double gravity = 9.81; //gravity: ускорение свободного падения
+    public const double gravity = 9.80665; //gravity: ускорение свободного падения
     public const double dt = 1.0 / 120.0; //dt: шаг по времени
     public const int numIters = 100; //  numIters: количество итераций
     //public const int frameNr = 0;
@@ -55,27 +72,17 @@ class Fluid
         this.numY = numY + 2; 
         this.numCells = this.numX * this.numY; 
         this.h = h; 
-        this.u = new List<double>(this.numCells); 
-        this.v = new List<double>(this.numCells); 
-        this.newU = new List<double>(this.numCells); 
-        this.newV = new List<double>(this.numCells); 
-        this.p = new List<double>(this.numCells); 
-        this.s = new List<double>(this.numCells); 
-        this.m = new List<double>(this.numCells); 
-        this.newM = new List<double>(this.numCells);
-        this.m = Enumerable.Repeat(1.0, this.numCells).ToList();
+        this.u = new double[this.numCells]; 
+        this.v = new double[this.numCells]; 
+        this.newU = new double[this.numCells]; 
+        this.newV = new double[this.numCells]; 
+        this.p = new double[this.numCells]; 
+        this.s = new double[this.numCells]; 
+        this.m = new double[this.numCells]; 
+        this.newM = new double[this.numCells];
+        this.m = Enumerable.Repeat(1.0, this.numCells).ToArray();
         this.num = numX * numY; 
     }
-
-    //~Fluid() { }
-
-    //public void GetM()
-    //{
-    //    foreach (double n in this.m)
-    //    {
-    //        Console.WriteLine(n);
-    //    }
-    //}
 
     public void integrate(double dt, double gravity)
     {
@@ -170,7 +177,7 @@ class Fluid
         double dx = .0;
         double dy = .0;
 
-        List<double> f = new List<double>(this.numCells);
+        double[] f = new double[this.numCells];
 
         switch (field)
         {
@@ -199,7 +206,12 @@ class Fluid
 
     }
 
+    /// <summary>
     /// Средняя скорость в направлении X
+    /// </summary>
+    /// <param name="i"></param>
+    /// <param name="j"></param>
+    /// <returns></returns>
     public double avgU (int i, int j)
     {
         int n = this.numY;
@@ -208,7 +220,12 @@ class Fluid
         return u;
     }
 
+    /// <summary>
     /// Средняя скорость в направлении Y
+    /// </summary>
+    /// <param name="i"></param>
+    /// <param name="j"></param>
+    /// <returns></returns>
     public double avgV (int i, int j)
     {
         int n = this.numY;
@@ -319,16 +336,69 @@ class Fluid
     /// <param name="dt"></param>
     /// <param name="gravity"></param>
     /// <param name="numIters"></param>
-    public void simulate(double dt, double gravity, int numIters)
+    public void Simulate(double dt, int numIters) //убрал gravity т.к. она была в константах
     {
         integrate(dt, gravity);
-        p = Enumerable.Repeat(.0, this.numCells).ToList();
+        p = Enumerable.Repeat(.0, this.numCells).ToArray();
 
         solveIncompressibility(numIters, dt);
         extrapolate();
         advectVel(dt);
         advectSmoke(dt);
     }
+
+    #region Вывод + ToString()
+    public override string ToString()
+    {
+        StringBuilder result = new StringBuilder("\nFluid:\n");
+        int n = this.numY;
+        result.AppendLine("u, v:");
+        for (int i = 1; i < this.numX; i++)
+        {
+
+            for (int j = 1; j < this.numY; j++)
+            {
+                result.Append("(").Append(this.u[i * n + j]).
+                    Append(",").Append(this.v[i * n + j]).Append(") ");
+            }
+            result.Append("\n");
+        }
+        result.AppendLine("newU, newV:");
+        for (int i = 1; i < this.numX; i++)
+        {
+
+            for (int j = 1; j < this.numY; j++)
+            {
+                result.Append("(").Append(this.newU[i * n + j]).
+                    Append(",").Append(this.newV[i * n + j]).Append(") ");
+            }
+            result.Append("\n");
+        }
+
+        result.AppendLine("m:");
+        for (int i = 1; i < this.numX; i++)
+        {
+            for (int j = 1; j < this.numY; j++)
+            {
+                result.Append(this.m[i * n + j]).Append(" ");
+            }
+            result.Append("\n");
+        }
+        result.AppendLine("newM:");
+        for (int i = 1; i < this.numX; i++)
+        {
+
+            for (int j = 1; j < this.numY; j++)
+            {
+                result.Append(this.newM[i * n + j]).Append(" " );
+            }
+            result.Append("\n");
+        }
+        return result.ToString();
+
+    }
+    #endregion
+
 }
 
 namespace fluid
@@ -338,17 +408,16 @@ namespace fluid
         
         static void Main(string[] args)
         {
-
-            
-
-            Fluid fluid = new Fluid(1000, 100, 100, 100);
-            
+            Fluid fluid = new Fluid(1000, 10, 10, 100);
+            fluid.Simulate(10, 1);
+            Console.WriteLine(fluid);
             //foreach (double item in fluid.m)
             //{
             //    Console.WriteLine(item);
             //}
 
             //fluid.GetM();
+            Console.ReadLine();
         }
     }
 }
