@@ -21,26 +21,44 @@ class Fluid
     //    }
     //}
     #endregion
-    /// <summary>
-    /// Плотность жидкости
-    /// </summary>
+
+    #region Поля сетки
+    /// <summary>Плотность жидкости </summary>
     private double density; 
-    /// <summary>
-    /// Количество ячеек по оси X.
-    /// </summary>
+    /// <summary>Количество ячеек по оси X </summary>
     private int numX;
-    private int numY; //numY: количество ячеек по оси Y
-    private int numCells; // numCells: общее количество ячеек в системе
-    private int h; // h: размер ячейки
-    private double[] u; // u: скорости в направлении X
-    private double[] v; // v: скорости в направлении Y
-    private double[] newU; // newU: новое значение скорости в направлении X
-    private double[] newV; // newV: новое значение скорости в направлении Y
-    private double[] p; //p: давление
-    private double[] s; //s: массовый источник
-    private double[] m; //m: массовые коэффициенты
-    private double[] newM;  // newM: новые массовые коэффициенты
-    private int num; //num: общее количество ячеек 
+    /// <summary>Количество ячеек по оси X </summary>
+    private int numY;
+    /// <summary>Общее количество ячеек в системе</summary>
+    private int numCells;
+    /// <summary>Размер ячейки</summary>
+    private int h;
+    /// <summary>Cкорости в направлении X</summary>
+    private double[] u;
+    /// <summary>Cкорость в направлении Y</summary>
+    private double[] v;
+    /// <summary>Новое значение скорости в направлении X (после dt)</summary>
+    private double[] newU;
+    /// <summary>Новое значение скорости в направлении Y (после dt)</summary>
+    private double[] newV;
+    /// <summary>Давление</summary>
+    private double[] p;
+    /// <summary>Массовый источник --??? to do</summary>
+    private double[] s;
+    /// <summary>
+    /// Массовые коэффициенты каждой ячейки
+    /// m[i*numY + j] -- масса ячейки [i*numY + j]
+    /// </summary>
+    private double[] m;
+    /// <summary>
+    /// Новые массовые коэффициенты каждой ячейки после dt 
+    /// newM[i*numY + j] -- масса ячейки [i*numY + j] после dt
+    /// </summary>
+    private double[] newM;
+    /// <summary>Общее количество ячеек без учета добавочных</summary>
+    private int num;
+
+#endregion
 
     // из обьекта scene
     public const double gravity = 9.80665; //gravity: ускорение свободного падения
@@ -336,7 +354,7 @@ class Fluid
     /// <param name="dt"></param>
     /// <param name="gravity"></param>
     /// <param name="numIters"></param>
-    public void Simulate(double dt, int numIters) //убрал gravity т.к. она была в константах
+    public void Simulate(int numIters) //убрал gravity, dt т.к. они есть в полях
     {
         integrate(dt, gravity);
         p = Enumerable.Repeat(.0, this.numCells).ToArray();
