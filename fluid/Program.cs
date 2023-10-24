@@ -381,7 +381,7 @@ class Fluid
     /// <param name="dt"></param>
     /// <param name="gravity"></param>
     /// <param name="numIters"></param>
-    public void Simulate(int numIters)
+    public void Simulate(double dt = dt, int numIters = numIters, double gravity = gravity)
     {
         Integrate(dt, gravity);
         p = Enumerable.Repeat(.0, this.numCells).ToArray();
