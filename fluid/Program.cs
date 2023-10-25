@@ -81,7 +81,7 @@ class Fluid
 
     #endregion
 
-    #region Что за константы?
+    #region Что за поля? obstacle -- Препядствие?
     public Fluid fluid;
     public bool Speed = false; 
     public double a = .0;
@@ -141,7 +141,7 @@ class Fluid
     }
 
     /// <summary>
-    /// Выполняет решение уравнения невозмущенности для давления
+    /// Выполняет решение уравнения Навье-Стокса?
     /// </summary>
     /// <param name="numIters"></param>
     /// <param name="dt"></param>
