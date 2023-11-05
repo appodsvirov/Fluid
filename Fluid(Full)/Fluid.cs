@@ -8,86 +8,164 @@ namespace Fluid_Full_
 {
     public class Fluid
     {
-        public float[] u;
-        public float[] v;
-        public float[] newU;
-        public float[] newV;
-        public float[] p;
-        public float[] s;
-        public float[] m;
-        public float[] newM;
-        public float density;
-        public int numX;
-        public int numY;
-        public int numCells;
-        public float h;
+        #region Поля сетки
+        /// <summary>Плотность жидкости </summary>
+        private double density;
+        /// <summary>Количество ячеек по оси X </summary>
+        private int numX;
+        /// <summary>Количество ячеек по оси X </summary>
+        private int numY;
+        /// <summary>Общее количество ячеек в системе</summary>
+        private int numCells;
+        /// <summary>Размер ячейки</summary>
+        private int h;
+        /// <summary>Cкорости в направлении X</summary>
+        private double[] u;
+        /// <summary>Cкорость в направлении Y</summary>
+        private double[] v;
+        /// <summary>Новое значение скорости в направлении X (после dt)</summary>
+        private double[] newU;
+        /// <summary>Новое значение скорости в направлении Y (после dt)</summary>
+        private double[] newV;
+        /// <summary>Давление</summary>
+        private double[] p;
+        /// <summary>Массовый источник --??? to do</summary>
+        private double[] s;
+        /// <summary>
+        /// Массовые коэффициенты каждой ячейки
+        /// <para> m[i*numY + j] -- масса ячейки [i*numY + j] </para>
+        /// </summary>
+        private double[] m;
+        /// <summary>
+        /// Новые массовые коэффициенты каждой ячейки после dt 
+        /// <para>newM[i*numY + j] -- масса ячейки [i*numY + j] после dt</para>
+        /// </summary>
+        private double[] newM;
+        /// <summary>Общее количество ячеек без учета добавочных</summary>
+        private int num;
 
-        public Fluid(float density, int numX, int numY, float h)
+        #endregion
+
+
+        #region Из обьекта scene
+        /// <summary>Ускорение свободного падения</summary>
+        public const double gravity = 9.80665;
+        /// <summary>Шаг по времени</summary>
+        public const double dt = 1.0 / 120.0;
+        /// <summary>Количество итераций</summary>
+        public const int numIters = 100;
+        /// <summary>Параметр сверхрелаксации</summary>
+        public const double overRelaxation = 1.9;
+        /// <summary>Координата препятствия по X </summary>
+        public const double obstacleX = .0;
+        /// <summary>Координата препятствия по Y </summary>
+        public const double obstacleY = .0;
+        /// <summaty>// Scene: Переключение числа Рейнольдса -- ? </summaty>
+        private bool Speed = false;
+
+        //public const int frameNr = 0;
+        //public bool paused = false;
+        //public int sceneNr = 0;
+        //public bool showPressure = false;
+        //public bool showSmoke = true;
+
+        #endregion
+
+        #region enum
+        public enum SearchParams
+        {
+            U_FIELD,
+            V_FIELD,
+            S_FIELD
+        }
+
+        #endregion
+
+
+        public Fluid(double density, int numX, int numY, int h)
         {
             this.density = density;
             this.numX = numX + 2;
             this.numY = numY + 2;
             this.numCells = this.numX * this.numY;
             this.h = h;
-            this.u = new float[this.numCells];
-            this.v = new float[this.numCells];
-            this.newU = new float[this.numCells];
-            this.newV = new float[this.numCells];
-            this.p = new float[this.numCells];
-            this.s = new float[this.numCells];
-            this.m = new float[this.numCells];
-            this.newM = new float[this.numCells];
-            Array.Fill(this.m, 1.0f);
+            this.u = new double[this.numCells];
+            this.v = new double[this.numCells];
+            this.p = new double[this.numCells];
+            this.s = new double[this.numCells];
+            this.m = Enumerable.Repeat(1.0, this.numCells).ToArray();
+            this.newU = new double[this.numCells];
+            this.newV = new double[this.numCells];
+            this.newM = new double[this.numCells];
+            this.num = numX * numY;
         }
-
-        public void Integrate(float dt, float gravity)
+        /// <summary>
+        /// // Гравитация   
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="gravity"></param>
+        public void Integrate(double dt, double gravity)
         {
             int n = this.numY;
-            for (int i = 1; i < this.numX; i++)
+            for (int i = 1; i < this.numX - 1; i++)
             {
                 for (int j = 1; j < this.numY - 1; j++)
                 {
-                    int index = i * n + j;
-                    if (this.s[index] != 0.0 && this.s[index + n] != 0.0)
-                        this.v[index] += gravity * dt;
+                    if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0)
+                    {
+                        this.v[i * n + j] += gravity * dt;
+                    }
                 }
             }
         }
 
-        public void SolveIncompressibility(int numIters, float dt)
+        /// <summary>
+        /// Несжимаемость
+        /// </summary>
+        /// <param name="numIters"></param>
+        /// <param name="dt"></param>
+
+        public void SolveIncompressibility(int numIters, double dt)
         {
             int n = this.numY;
-            float cp = this.density * this.h / dt;
+            double cp = this.density * this.h / dt;
+
             for (int iter = 0; iter < numIters; iter++)
             {
                 for (int i = 1; i < this.numX - 1; i++)
                 {
                     for (int j = 1; j < this.numY - 1; j++)
                     {
-                        int index = i * n + j;
-                        if (this.s[index] == 0.0)
+                        if (this.s[i * n + j] == 0.0)
+                        {
                             continue;
-                        float s = this.s[index];
-                        float sx0 = this.s[(i - 1) * n + j];
-                        float sx1 = this.s[(i + 1) * n + j];
-                        float sy0 = this.s[index - n];
-                        float sy1 = this.s[index + n];
+                        }
+                        double s = this.s[i * n + j];
+                        double sx0 = this.s[(i - 1) * n + j];
+                        double sx1 = this.s[(i + 1) * n + j];
+                        double sy0 = this.s[i * n + j - 1];
+                        double sy1 = this.s[i * n + j + 1];
                         s = sx0 + sx1 + sy0 + sy1;
                         if (s == 0.0)
+                        { 
                             continue;
-                        float div = this.u[(i + 1) * n + j] - this.u[index] + this.v[index + 1] - this.v[index];
-                        float p = -div / s;
-                        p *= scene.overRelaxation;
-                        this.p[index] += cp * p;
-                        this.u[index] -= sx0 * p;
+                        }
+                        double div = this.u[(i + 1) * n + j] - this.u[i * n + j]
+                            + this.v[i * n + j + 1] - this.v[i * n + j];
+                        double p = -div / s;
+                        p *= overRelaxation; //1.0 из scane; 2.0 поле клааса Fluid
+                        this.p[i * n + j] += cp * p;
+                        this.u[i * n + j] -= sx0 * p;
                         this.u[(i + 1) * n + j] += sx1 * p;
-                        this.v[index] -= sy0 * p;
-                        this.v[index + 1] += sy1 * p;
+                        this.v[i * n + j] -= sy0 * p;
+                        this.v[i * n + j + 1] += sy1 * p;
                     }
                 }
             }
         }
-
+        /// <summary>
+        /// Выполняет экстраполяцию (продление) значений скоростей на границах области моделирования.
+        /// </summary>
         public void Extrapolate()
         {
             int n = this.numY;
@@ -103,148 +181,194 @@ namespace Fluid_Full_
             }
         }
 
-        public float SampleField(float x, float y, int field)
+        /// <summary>
+        /// Возвращает значение поля (скорости) в указанной точке (x, y)
+        /// по указанному типу поля (field). 
+        /// <para>Используется линейная интерполяция между ближайшими значениями поля</para>
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public double SampleField(double x, double y, SearchParams searchParams)
         {
             int n = this.numY;
-            float h = this.h;
-            float h1 = 1.0f / h;
-            float h2 = 0.5f * h;
+            int h = this.h;
+            double h1 = 1.0 / h;
+            double h2 = .5 * h;
             x = Math.Max(Math.Min(x, this.numX * h), h);
             y = Math.Max(Math.Min(y, this.numY * h), h);
-            float dx = 0.0f;
-            float dy = 0.0f;
-            float dxR = 0.0f;
-            float dyR = 0.0f;
-            float a = 0.0f;
-            float f = 0.0f;
-            switch (field)
-            {
-                case U_FIELD:
-                    f = this.u;
-                    dy = h2;
-                    break;
 
-                case V_FIELD:
-                    f = this.v;
-                    dx = h2;
-                    break;
-                case S_FIELD:
-                    f = this.m;
-                    dx = h2;
-                    dy = h2;
-                    break;
+            double dx = .0;
+            double dy = .0;
+
+            double[] f = new double[this.numCells];
+
+            switch (searchParams)
+            {
+                case SearchParams.U_FIELD: f = this.u; dy = h2; break;
+                case SearchParams.V_FIELD: f = this.v; dx = h2; break;
+                case SearchParams.S_FIELD: f = this.m; dy = h2; dx = h2; break;
             }
-            int x0 = Math.Min((int)Math.Floor((x - dx) * h1), this.numX - 1);
-            float tx = ((x - dx) - x0 * h) * h1;
-            int x1 = Math.Min(x0 + 1, this.numX - 1);
-            int y0 = Math.Min((int)Math.Floor((y - dy) * h1), this.numY - 1);
-            float ty = ((y - dy) - y0 * h) * h1;
-            int y1 = Math.Min(y0 + 1, this.numY - 1);
-            float sx = 1.0f - tx;
-            float sy = 1.0f - ty;
-            float val = sx * sy * f[x0 * n + y0] +
-                        tx * sy * f[x1 * n + y0] +
-                        tx * ty * f[x1 * n + y1] +
-                        sx * ty * f[x0 * n + y1];
+
+            double x0 = Math.Min(Math.Floor((x - dx) * h1), this.numX - 1);
+            double tx = ((x - dx) - x0 * h) * h1;
+            double x1 = Math.Min(x0 + 1, this.numX - 1);
+
+            double y0 = Math.Min(Math.Floor((y - dy) * h1), this.numY - 1);
+            double ty = ((y - dy) - y0 * h) * h1;
+            double y1 = Math.Min(y0 + 1, this.numY - 1);
+
+            double sx = 1.0 - tx;
+            double sy = 1.0 - ty;
+
+            double val = sx * sy * f[(int)(x0 * n + y0)] +
+                tx * sy * f[(int)(x1 * n + y0)] +
+                tx * ty * f[(int)(x1 * n + y1)] +
+                sx * ty * f[(int)(x0 * n + y1)];
+
             return val;
+
         }
 
-        public float AvgU(int i, int j)
+        /// <summary>
+        /// Вычисляет среднюю скорость в направлении X
+        /// </summary>
+        /// <param name="i">Строка</param>
+        /// <param name="j">Столбец</param>
+        /// <returns></returns>
+        public double AvgU(int i, int j)
         {
             int n = this.numY;
-            float u = (this.u[i * n + j - 1] + this.u[i * n + j] +
-                        this.u[(i + 1) * n + j - 1] + this.u[(i + 1) * n + j]) * 0.25f;
+            double u = (this.u[i * n + j - 1] + this.u[i * n + j] +
+                this.u[(i + 1) * n + j - 1] + this.u[(i + 1) * n + j]) * 0.25;
             return u;
         }
 
-        public float AvgV(int i, int j)
+        /// <summary>
+        /// Средняя скорость в направлении Y
+        /// </summary>
+        /// <param name="i">Строка</param>
+        /// <param name="j">Столбец</param>
+        /// <returns></returns>
+        public double AvgV(int i, int j)
         {
             int n = this.numY;
-            float v = (this.v[(i - 1) * n + j] + this.v[i * n + j] +
-                        this.v[(i - 1) * n + j + 1] + this.v[i * n + j + 1]) * 0.25f;
+            double v = (this.v[(i - 1) * n + j] + this.v[i * n + j] +
+                this.v[(i - 1) * n + j + 1] + this.v[i * n + j + 1]) * 0.25;
             return v;
         }
 
-        public void AdvectVel(float dt)
+
+        /// <summary>
+        /// Выполняет адвекцию (транспортировку) скоростей по времени dt.
+        /// Обновляет значения скоростей в новых ячейках newU и newV 
+        /// на основе текущих значений скоростей u и v.
+        /// Используется линейная интерполяция для получения новых значений скоростей.
+        /// </summary>
+        /// <param name="dt"></param>
+        public void AdvectVel(double dt)
         {
-            this.newU = (float[])this.u.Clone();
-            this.newV = (float[])this.v.Clone();
+            this.newU = this.u;
+            this.newV = this.v;
             int n = this.numY;
-            float h = this.h;
-            float h2 = 0.5f * h;
+
+            double h2 = .5 * h;
+
             for (int i = 1; i < this.numX; i++)
             {
                 for (int j = 1; j < this.numY; j++)
                 {
-                    cnt++;
+
+                    //cnt++;
+
+                    // Горизонтальная составляющая (u)
                     if (this.s[i * n + j] != 0.0 && this.s[(i - 1) * n + j] != 0.0 && j < this.numY - 1)
                     {
-                        float x = i * h;
-                        float y = j * h + h2;
-                        float u = this.u[i * n + j];
-                        float v = this.AvgV(i, j);
+                        double x = i * h;
+                        double y = j * h + h2;
+                        double u = this.u[i * n + j];
+                        double v = this.AvgV(i, j);
                         x = x - dt * u;
                         y = y - dt * v;
-                        u = this.SampleField(x, y, U_FIELD);
+                        u = this.SampleField(x, y, SearchParams.U_FIELD);
                         this.newU[i * n + j] = u;
                     }
+                    // Вертикальная составляющая (v)
                     if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0 && i < this.numX - 1)
                     {
-                        float x = i * h + h2;
-                        float y = j * h;
-                        float u = this.AvgU(i, j);
-                        float v = this.v[i * n + j];
+                        double x = i * h + h2;
+                        double y = j * h;
+                        double u = this.AvgU(i, j);
+                        double v = this.v[i * n + j];
                         x = x - dt * u;
                         y = y - dt * v;
-                        v = this.SampleField(x, y, V_FIELD);
+                        v = this.SampleField(x, y, SearchParams.V_FIELD);
                         this.newV[i * n + j] = v;
                     }
                 }
             }
-            this.u = (float[])this.newU.Clone();
-            this.v = (float[])this.newV.Clone();
+
         }
 
-        public void AdvectSmoke(float dt)
+        /// <summary>
+        /// выполняет адвекцию (транспортировку) дыма (массового источника) для каждой ячейки. 
+        /// Обновляет новые значения массового источника newM на основе текущих значений скоростей u и v. 
+        /// Используется линейная интерполяция для получения новых значений массового источника.
+        /// </summary>
+        /// <param name="dt"></param>
+        public void AdvectSmoke(double dt)
         {
-            this.newM = (float[])this.m.Clone();
+
+            this.newM = this.m;
+
             int n = this.numY;
-            float h = this.h;
-            float h2 = 0.5f * h;
+            double h = this.h;
+            double h2 = 0.5 * h;
+
+            double u, v;
+
             for (int i = 1; i < this.numX - 1; i++)
             {
                 for (int j = 1; j < this.numY - 1; j++)
                 {
+
                     if (this.s[i * n + j] != 0.0)
                     {
-                        if (scene.Speed) // Переключение числа Рейнольдса
+
+                        if (Speed) // Переключение числа Рейнольдса
                         {
-                            float u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.03f; // Скорость
-                            float v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.03f;
+                            u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.03;   // Скорость
+                            v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.03;
                         }
                         else
                         {
-                            float u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.5f; // Скорость
-                            float v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.5f;
+                            u = (this.u[i * n + j] + this.u[(i + 1) * n + j]) * 0.5;    // Скорость
+                            v = (this.v[i * n + j] + this.v[i * n + j + 1]) * 0.5;
                         }
-                        float x = i * h + h2 - dt * u;
-                        float y = j * h + h2 - dt * v;
-                        this.newM[i * n + j] = this.SampleField(x, y, S_FIELD);
+
+                        var x = i * h + h2 - dt * u;
+                        var y = j * h + h2 - dt * v;    // Направление
+
+                        this.newM[i * n + j] = this.SampleField(x, y, SearchParams.S_FIELD);
                     }
                 }
             }
-            this.m = (float[])this.newM.Clone();
+            this.m = this.newM;
         }
 
-        public void Simulate(float dt, float gravity, int numIters)
+        public void Simulate(double dt = dt, double gravity = gravity, int numIters = numIters)
         {
-            this.Integrate(dt, gravity);
-            Array.Fill(this.p, 0.0f);
-            this.SolveIncompressibility(numIters, dt);
-            this.Extrapolate();
-            this.AdvectVel(dt);
-            this.AdvectSmoke(dt);
+            Integrate(dt, gravity);
+            p = Enumerable.Repeat(.0, this.numCells).ToArray();
+
+            SolveIncompressibility(numIters, dt);
+            Extrapolate();
+            AdvectVel(dt);
+            AdvectSmoke(dt);
         }
+
+
     }
 
 
