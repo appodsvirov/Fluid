@@ -45,7 +45,7 @@ namespace Fluid_Full_
             sceneNr = 0;
             showPressure = false;
             showSmoke = true;
-            fluid = new Fluid(1000, 10, 10, 100);
+            fluid = new Fluid(1000, 100, 100, 100);
             speed = false;
             a = 0.0f;
             obstacle = 0;
@@ -74,8 +74,6 @@ namespace Fluid_Full_
         }
         #endregion
 
-
-        
     }
 }
 

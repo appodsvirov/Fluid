@@ -448,7 +448,7 @@ class Fluid
 
 namespace fluid
 {
-    internal class Program
+    internal class ProgramSmallFluid
     {
         
         static void Main(string[] args)

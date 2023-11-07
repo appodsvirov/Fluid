@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,41 +9,41 @@ namespace Fluid_Full_
 {
     public class Fluid
     {
-        #region Поля сетки
+        #region Поля, свойства сетки
         /// <summary>Плотность жидкости </summary>
-        private double density;
+        public double density;
         /// <summary>Количество ячеек по оси X </summary>
-        private int numX;
+        public int numX;
         /// <summary>Количество ячеек по оси X </summary>
-        private int numY;
+        public int numY;
         /// <summary>Общее количество ячеек в системе</summary>
-        private int numCells;
+        public int numCells;
         /// <summary>Размер ячейки</summary>
-        private int h;
+        public double h;
         /// <summary>Cкорости в направлении X</summary>
-        private double[] u;
+        public double[] u;
         /// <summary>Cкорость в направлении Y</summary>
-        private double[] v;
+        public double[] v;
         /// <summary>Новое значение скорости в направлении X (после dt)</summary>
-        private double[] newU;
+        public double[] newU;
         /// <summary>Новое значение скорости в направлении Y (после dt)</summary>
-        private double[] newV;
+        public double[] newV;
         /// <summary>Давление</summary>
-        private double[] p;
+        public double[] p;
         /// <summary>Массовый источник --??? to do</summary>
-        private double[] s;
+        public double[] s;
         /// <summary>
         /// Массовые коэффициенты каждой ячейки
         /// <para> m[i*numY + j] -- масса ячейки [i*numY + j] </para>
         /// </summary>
-        private double[] m;
+        public double[] m;
         /// <summary>
         /// Новые массовые коэффициенты каждой ячейки после dt 
         /// <para>newM[i*numY + j] -- масса ячейки [i*numY + j] после dt</para>
         /// </summary>
-        private double[] newM;
+        public double[] newM;
         /// <summary>Общее количество ячеек без учета добавочных</summary>
-        private int num;
+        public int num;
 
         #endregion
 
@@ -71,18 +72,8 @@ namespace Fluid_Full_
 
         #endregion
 
-        #region enum
-        public enum SearchParams
-        {
-            U_FIELD,
-            V_FIELD,
-            S_FIELD
-        }
 
-        #endregion
-
-
-        public Fluid(double density, int numX, int numY, int h)
+        public Fluid(double density, int numX, int numY, double h)
         {
             this.density = density;
             this.numX = numX + 2;
@@ -161,6 +152,12 @@ namespace Fluid_Full_
                         this.v[i * n + j + 1] += sy1 * p;
                     }
                 }
+
+                Point coorinate;
+                coorinate = LogFluid.GetCoordinate(0);
+                LogFluid.AddSpeeds(0, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
+                coorinate = LogFluid.GetCoordinate(1);
+                LogFluid.AddSpeeds(1, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
             }
         }
         /// <summary>
@@ -193,7 +190,7 @@ namespace Fluid_Full_
         public double SampleField(double x, double y, SearchParams searchParams)
         {
             int n = this.numY;
-            int h = this.h;
+            double h = this.h;
             double h1 = 1.0 / h;
             double h2 = .5 * h;
             x = Math.Max(Math.Min(x, this.numX * h), h);
@@ -368,7 +365,57 @@ namespace Fluid_Full_
             AdvectSmoke(dt);
         }
 
+        #region Вывод + ToString()
+        public override string ToString()
+        {
+            StringBuilder result = new StringBuilder("Fluid:\n");
+            int n = this.numY;
+            result.AppendLine("u, v:");
+            for (int i = 1; i < this.numX; i++)
+            {
 
+                for (int j = 1; j < this.numY; j++)
+                {
+                    result.Append("(").Append(this.u[i * n + j]).
+                        Append(",").Append(this.v[i * n + j]).Append(") ");
+                }
+                result.Append("\n");
+            }
+            result.AppendLine("newU, newV:");
+            for (int i = 1; i < this.numX; i++)
+            {
+
+                for (int j = 1; j < this.numY; j++)
+                {
+                    result.Append("(").Append(this.newU[i * n + j]).
+                        Append(",").Append(this.newV[i * n + j]).Append(") ");
+                }
+                result.Append("\n");
+            }
+
+            result.AppendLine("m:");
+            for (int i = 1; i < this.numX; i++)
+            {
+                for (int j = 1; j < this.numY; j++)
+                {
+                    result.Append(this.m[i * n + j]).Append(" ");
+                }
+                result.Append("\n");
+            }
+            result.AppendLine("newM:");
+            for (int i = 1; i < this.numX; i++)
+            {
+
+                for (int j = 1; j < this.numY; j++)
+                {
+                    result.Append(this.newM[i * n + j]).Append(" ");
+                }
+                result.Append("\n");
+            }
+            return result.ToString();
+
+        }
+        #endregion
     }
 
 
