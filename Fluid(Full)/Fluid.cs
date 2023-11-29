@@ -153,11 +153,14 @@ namespace Fluid_Full_
                     }
                 }
 
-                Point coorinate;
-                coorinate = LogFluid.GetCoordinate(0);
-                LogFluid.AddSpeeds(0, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
-                coorinate = LogFluid.GetCoordinate(1);
-                LogFluid.AddSpeeds(1, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
+                //Point coorinate;
+                //coorinate = LogFluid.GetCoordinate(0);
+                //LogFluid.AddSpeeds(0, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
+                //LogFluid.AddMass(0, m[coorinate.X * n + coorinate.Y]);
+
+                //coorinate = LogFluid.GetCoordinate(1);
+                //LogFluid.AddSpeeds(1, u[coorinate.X * n + coorinate.Y], v[coorinate.X * n + coorinate.Y]);
+                //LogFluid.AddMass(1, m[coorinate.X * n + coorinate.Y]);
             }
         }
         /// <summary>
@@ -356,6 +359,18 @@ namespace Fluid_Full_
 
         public void Simulate(double dt = dt, double gravity = gravity, int numIters = numIters)
         {
+            int n = numY;
+            Point coorinate;
+            coorinate = LogFluid.GetCoordinate(0);
+            LogFluid.AddSpeeds(0, newU[coorinate.X * n + coorinate.Y], newV[coorinate.X * n + coorinate.Y]);
+            LogFluid.AddMass(0, newM[coorinate.X * n + coorinate.Y]);
+            LogFluid.AddP(0, p[coorinate.X * n + coorinate.Y]);
+
+            coorinate = LogFluid.GetCoordinate(1);
+            LogFluid.AddSpeeds(1, newU[coorinate.X * n + coorinate.Y], newV[coorinate.X * n + coorinate.Y]);
+            LogFluid.AddMass(1, newM[coorinate.X * n + coorinate.Y]);
+            LogFluid.AddP(1, p[coorinate.X * n + coorinate.Y]);
+
             Integrate(dt, gravity);
             p = Enumerable.Repeat(.0, this.numCells).ToArray();
 
@@ -363,6 +378,8 @@ namespace Fluid_Full_
             Extrapolate();
             AdvectVel(dt);
             AdvectSmoke(dt);
+
+
         }
 
         #region Вывод + ToString()

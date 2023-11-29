@@ -43,11 +43,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enum.cs" />
+    <Compile Include="Fluid.cs" />
+    <Compile Include="JSCanvas.cs" />
+    <Compile Include="LogFluid.cs" />
     <Compile Include="ProgramSmallFluid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scene.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="output\M_Down.txt" />
+    <Content Include="output\M_Up.txt" />
+    <Content Include="output\P_Down.txt" />
+    <Content Include="output\P_Up.txt" />
+    <Content Include="output\U_Down.txt" />
+    <Content Include="output\U_Up.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

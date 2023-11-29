@@ -53,7 +53,7 @@ namespace Fluid_Full_
             // scene.a = 0;
 
             scene.dt = 1.0 / 60.0;
-            scene.numIters = 1000;
+            scene.numIters = 40;
 
             int res = 100;
 
