@@ -68,8 +68,6 @@ namespace FluidWPF.ViewModels
             }
         }
 
-
-
         public int ScaleNet
         {
             get { return (int)GetValue(ScaleNetProperty); }
@@ -82,13 +80,23 @@ namespace FluidWPF.ViewModels
 
 
 
+        public int ProgressStatus
+        {
+            get { return (int)GetValue(ProgressStatusProperty); }
+            set { SetValue(ProgressStatusProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ProgressStatus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ProgressStatusProperty =
+            DependencyProperty.Register("ProgressStatus", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
+
         public ICommand ClikToSolve
         {
             get
             {
                 return new DelegateCommand((obj) =>
                 {
-                    CountSteps++;
+                    ProgressStatus++;
                 });
             }
         }
