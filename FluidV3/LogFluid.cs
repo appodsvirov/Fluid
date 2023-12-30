@@ -14,8 +14,11 @@ namespace FluidV3
         StringBuilder sBPUp, sBMUp, sBUUp;
         StringBuilder sBPDown, sBMDown, sBUDown;
 
-        public (int, int) pointUp = (99, 62);
-        public (int, int) pointDown = (99, 38);
+        public (int, int) pointUp = ((int)(99*GlobalValues.scaleNet), (int)(62*GlobalValues.scaleNet));
+        public (int, int) pointDown = ((int)(99*GlobalValues.scaleNet), (int)(38*GlobalValues.scaleNet));
+
+        //public (int, int) pointUp = ((int)(83 * GlobalValues.scaleNet), (int)(52 * GlobalValues.scaleNet));
+        //public (int, int) pointDown = ((int)(83 * GlobalValues.scaleNet), (int)(48 * GlobalValues.scaleNet));
 
         public LogFluid()
         {
@@ -37,31 +40,26 @@ namespace FluidV3
             sBUDown.Append(u2).AppendLine();
         }
 
+        public void Log(double p1)
+        {
+            sBPUp.Append(p1).AppendLine();
+        }
+
         public void GetLog()
         {
-            try
-            {
-                sWPUp =      new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Up.txt");
-                sWPDown =    new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Down.txt");
-                sWMUp =      new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\M_Up.txt");
-                sWMDown =    new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\M_Down.txt");
-                sWUUp =      new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\U_Up.txt");
-                sWUDown =    new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\U_Down.txt");
-
-
+            using(var sWPUp = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Up.txt"))
+            using(var sWPDown = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Down.txt"))
+            using(var sWMUp = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\M_Up.txt"))
+            using(var sWMDown = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\M_Down.txt"))
+            using(var sWUUp = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\U_Up.txt"))
+            using(var sWUDown = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\U_Down.txt"))
+            { 
                 sWPUp.Write(sBPUp.ToString());
                 sWPDown.Write(sBPDown.ToString());
                 sWMUp.Write(sBMUp.ToString());
                 sWMDown.Write(sBMDown.ToString());
                 sWUUp.Write(sBUUp.ToString());
                 sWUDown.Write(sBUDown.ToString());
-            }
-            finally
-            {
-                sWPUp.Dispose();
-                sWPDown.Dispose();
-                sWMUp.Dispose();
-                sWMDown.Dispose();
             }
         }
     }

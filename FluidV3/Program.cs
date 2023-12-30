@@ -1,4 +1,5 @@
 ﻿using FluidV3;
+using System.Diagnostics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var canvas = new Canvas();
@@ -15,92 +16,95 @@ double cnt = 0;
 double cX(double x) => x * cScale;
 double cY(double y) => canvas.height - y * cScale;
 
-//LogFluid logFluid = new LogFluid(); 
+LogFluid logFluid = new LogFluid();
 
-//SetupScene(1);
-//Update(ref cnt, logFluid, GlobalValues.steps);
+Stopwatch stopwatch = new Stopwatch();
+stopwatch.Start();
+SetupScene(1);
+Update(ref cnt, logFluid, GlobalValues.steps);
+stopwatch.Stop();
 
-//logFluid.GetLog();
 
-using (StreamReader streamReader = new StreamReader("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Up.txt"))
+Console.WriteLine("Время(мс) = " + stopwatch.ElapsedMilliseconds);
+logFluid.GetLog();
+
+//using (StreamReader streamReader = new StreamReader("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_Up.txt"))
+//using (StreamWriter streamWriter = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_500.txt"))
+//{
+//    int tmp = 0;
+//    while (!streamReader.EndOfStream)
+//    {
+//        if (tmp % 500 == 0)
+//            streamWriter.WriteLine(streamReader.ReadLine());
+//        else
+//            streamReader.ReadLine();
+//        tmp++;
+//    }
+//}
+
+void SetupScene(double sceneNr = 0)
 {
-    using (StreamWriter streamWriter = new StreamWriter("C:\\Users\\USER\\Desktop\\fluid\\FluidV3\\output\\P_500.txt"))
+    Scene.sceneNr = sceneNr;
+    Scene.overRelaxation = 1.9;
+
+    //Scene.a = 0;
+
+    Scene.dt = GlobalValues.dt;
+    Scene.numIters = 40;        // тут ИТЕРАЦИИ!!!!
+
+    double res = 100 * GlobalValues.scaleNet;      //Размер сетки
+
+    double domainHeight = 1.0;
+    double domainWidth = domainHeight / simHeight * simWidth;
+    double h = domainHeight / res;
+
+    double numX = Math.Floor(domainWidth / h);
+    double numY = Math.Floor(domainHeight / h);
+
+    double density = 1000.0;
+
+    Fluid f = Scene.fluid = new Fluid(density, numX, numY, h);
+
+    double n = f.numY;
+
+    double inVel = GlobalValues.inVel; //ww
+
+
+    for (double i = 0; i < f.numX; i++)
     {
-        int tmp = 0;
-        while (!streamReader.EndOfStream)
+        for (double j = 0; j < f.numY; j++)
         {
-            if (tmp % 500 == 0)
-                streamWriter.WriteLine(streamReader.ReadLine());
-            else
-                streamReader.ReadLine();
-            tmp++;
-        }
-    }
-}
-
-    void SetupScene(double sceneNr = 0)
-    {
-        Scene.sceneNr = sceneNr;
-        Scene.overRelaxation = 1.9;
-
-        //Scene.a = 0;
-
-        Scene.dt = 1.0 / 60.0;
-        Scene.numIters = 40;        // тут ИТЕРАЦИИ!!!!
-
-        double res = 100;      //Размер сетки
-
-        double domainHeight = 1.0;
-        double domainWidth = domainHeight / simHeight * simWidth;
-        double h = domainHeight / res;
-
-        double numX = Math.Floor(domainWidth / h);
-        double numY = Math.Floor(domainHeight / h);
-
-        double density = 1000.0;
-
-        Fluid f = Scene.fluid = new Fluid(density, numX, numY, h);
-
-        double n = f.numY;
-
-        double inVel = GlobalValues.inVel; //ww
+            double s = 1.0;    // Жижа
+            if (i == 0 || j == 0 || j == f.numY - 1)
+                s = 0.0;    // Не жижа
+            f.s[(int)(i * n + j)] = s;
 
 
-        for (double i = 0; i < f.numX; i++)
-        {
-            for (double j = 0; j < f.numY; j++)
+            if (i == 1)
             {
-                double s = 1.0;    // Жижа
-                if (i == 0 || j == 0 || j == f.numY - 1)
-                    s = 0.0;    // Не жижа
-                f.s[(int)(i * n + j)] = s;
-
-
-                if (i == 1)
-                {
-                    f.u[(int)(i * n + j)] = inVel;
-                }
+                f.u[(int)(i * n + j)] = inVel;
             }
         }
-
-        double pipeH = 0.1 * f.numY;                               //Толщина струи дыма
-        double minJ = Math.Floor(0.5 * f.numY - 0.5 * pipeH);
-        double maxJ = Math.Floor(0.5 * f.numY + 0.5 * pipeH);
-
-        for (double j = minJ; j < maxJ; j++)
-        {
-            f.m[(int)j] = 0.0;
-        }
-
-        SetObstacle(0.8, 0.5, true);
-
-        Scene.x_late = 0.8; //Скопировать сюда стартовые координаты
-        Scene.y_late = 0.5;
-
-        Scene.gravity = 0.0;
-        Scene.showPressure = false;
-        Scene.showSmoke = true;
     }
+
+    double pipeH = 0.1 * f.numY;                               //Толщина струи дыма
+    double minJ = Math.Floor(0.5 * f.numY - 0.5 * pipeH);
+    double maxJ = Math.Floor(0.5 * f.numY + 0.5 * pipeH);
+
+    for (double j = minJ; j < maxJ; j++)
+    {
+        f.m[(int)j] = 0.0;
+    }
+
+    SetObstacle(0.8, 0.5, true);
+
+    Scene.x_late = 0.8; //Скопировать сюда стартовые координаты
+    Scene.y_late = 0.5;
+
+    Scene.gravity = 0.0;
+    Scene.showPressure = false;
+    Scene.showSmoke = true;
+}
 
 void SetObstacle(double x, double y, bool reset)
 {
@@ -264,7 +268,7 @@ void Simulate(ref double cnt, LogFluid logFluid)
 {
     if (!Scene.paused)
     {
-        Scene.fluid.Simulate(Scene.dt, Scene.gravity, Scene.numIters, ref cnt, logFluid);
+        Scene.fluid.Simulate(Scene.dt, Scene.gravity, Scene.numIters, ref cnt, logFluid, (int)Scene.frameNr);
         Scene.frameNr++;
     }
 }
@@ -273,7 +277,7 @@ void Update(ref double cnt, LogFluid logFluid, int i = 100)
 {
     while (Scene.frameNr < i)
     {
-        if (Scene.frameNr % 100 == 0) Console.WriteLine(Scene.frameNr + " из " + i);
+        if (Scene.frameNr % 100 == 0) Console.WriteLine(Scene.frameNr + " из " + i + " = " + (double)(100*Scene.frameNr/i) + " %");
         Simulate(ref cnt, logFluid);
     }
 
@@ -552,7 +556,7 @@ public class Fluid
         Array.Copy(this.newM, this.m, this.newM.Length); //this.m.set(this.newM);
     }
 
-    public void Simulate(double dt, double gravity, double numIters, ref double cnt, LogFluid lf)
+    public void Simulate(double dt, double gravity, double numIters, ref double cnt, LogFluid lf, int iterNum)
     {
 
         this.Integrate(dt, gravity);
@@ -564,28 +568,23 @@ public class Fluid
         this.AdvectVel(dt, ref cnt);
         this.AdvectSmoke(dt);
 
-        if (lf != null)
+        if (lf != null && iterNum % 500 == 0)
         {
             double n = numY;
-            lf.Log(p[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)],
-                p[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)],
-                m[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)],
-                m[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)],
-                Math.Sqrt(Math.Pow(u[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)], 2) *
-                Math.Pow(v[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)], 2)),
-                Math.Sqrt(Math.Pow(u[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)], 2) * 
-                Math.Pow(v[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)], 2))
-                );
+            lf.Log(p[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)]);
+            //lf.Log(p[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)],
+            //    p[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)],
+            //    m[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)],
+            //    m[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)],
+            //    Math.Sqrt(Math.Pow(u[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)], 2) *
+            //    Math.Pow(v[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)], 2)),
+            //    Math.Sqrt(Math.Pow(u[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)], 2) *
+            //    Math.Pow(v[(int)(lf.pointDown.Item1 * numY + lf.pointDown.Item2)], 2))
+            //    );
         }
     }
 }
 
-static class GlobalValues //gg
-{
-    public static double inVel = 0.006;
-    public static double rad2 = 0.0025;
-    public static int steps = 200002;
-}
 static class Scene
 {
     static public double gravity = -9.81;

@@ -5,9 +5,9 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fluid", "fluid\fluid.csproj", "{5F9572F5-D451-45A0-BDAE-A7E89D92C6FD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fluid(Full)", "Fluid(Full)\Fluid(Full).csproj", "{B4A3F4DA-3C64-454B-ABB4-0D69AB312B92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluidV3", "FluidV3\FluidV3.csproj", "{9F289A0C-A269-4F52-885A-92CCFD3F0630}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluidV3", "FluidV3\FluidV3.csproj", "{9F289A0C-A269-4F52-885A-92CCFD3F0630}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluidWPF", "FluidWPF\FluidWPF.csproj", "{D22AF5FB-24F0-4ACB-B89C-3FB97D2AD0AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,14 @@ Global
 		{5F9572F5-D451-45A0-BDAE-A7E89D92C6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F9572F5-D451-45A0-BDAE-A7E89D92C6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F9572F5-D451-45A0-BDAE-A7E89D92C6FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4A3F4DA-3C64-454B-ABB4-0D69AB312B92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4A3F4DA-3C64-454B-ABB4-0D69AB312B92}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4A3F4DA-3C64-454B-ABB4-0D69AB312B92}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4A3F4DA-3C64-454B-ABB4-0D69AB312B92}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F289A0C-A269-4F52-885A-92CCFD3F0630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9F289A0C-A269-4F52-885A-92CCFD3F0630}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F289A0C-A269-4F52-885A-92CCFD3F0630}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F289A0C-A269-4F52-885A-92CCFD3F0630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D22AF5FB-24F0-4ACB-B89C-3FB97D2AD0AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D22AF5FB-24F0-4ACB-B89C-3FB97D2AD0AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D22AF5FB-24F0-4ACB-B89C-3FB97D2AD0AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D22AF5FB-24F0-4ACB-B89C-3FB97D2AD0AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
