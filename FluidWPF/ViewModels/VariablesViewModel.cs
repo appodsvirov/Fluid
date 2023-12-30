@@ -68,6 +68,20 @@ namespace FluidWPF.ViewModels
             }
         }
 
+
+
+        public int ScaleNet
+        {
+            get { return (int)GetValue(ScaleNetProperty); }
+            set { SetValue(ScaleNetProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ScaleNet.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ScaleNetProperty =
+            DependencyProperty.Register("ScaleNet", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(1));
+
+
+
         public ICommand ClikToSolve
         {
             get

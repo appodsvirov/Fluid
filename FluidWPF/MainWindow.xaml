@@ -75,7 +75,19 @@
                     </x:Array>
                 </ComboBox.ItemsSource>
             </ComboBox>
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Масштаб сетки(ScaleNet): "  VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <ComboBox Grid.Row="4" Grid.Column="1" SelectedItem="{Binding Variables.ScaleNet}"  VerticalAlignment="Center" Margin="5">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="{x:Type sys:Int32}">
+                        <sys:Int32>1</sys:Int32>
+                        <sys:Int32>2</sys:Int32>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+            </ComboBox>
+
         </Grid>
+        
 
         <Button Grid.Column="1" Grid.Row="0" Command="{Binding Variables.ClikToSolve}" Content="Решить" Margin="5"/>
 
