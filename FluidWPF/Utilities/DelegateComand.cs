@@ -25,6 +25,7 @@ namespace FluidWPF.Utilities
         }
         public bool CanExecute(object parameter)
         {
+            return canExecute?.Invoke(parameter)??true;
             return this.canExecute == null || this.canExecute(parameter ?? throw new Exception());
         }
         public void Execute(object parameter)
