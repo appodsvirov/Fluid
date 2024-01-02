@@ -3,6 +3,7 @@ using FluidWPF.Models;
 using FluidWPF.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,8 +22,9 @@ namespace FluidWPF.ViewModels
             set { SetValue(DtProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for Dt.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DtProperty =
-            DependencyProperty.Register("Dt", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.0167));
+            DependencyProperty.Register("Dt", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.01667));
 
         public double InSpeed
         {
@@ -34,15 +36,12 @@ namespace FluidWPF.ViewModels
         public static readonly DependencyProperty InSpeedProperty =
             DependencyProperty.Register("InSpeed", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(1.0));
 
-
-        public double Rad2 { get; set; }
         public double Height
         {
             get { return (double)GetValue(HeightProperty); }
             set
             {
-                Rad2 = (value / 2) * (value / 2);
-                SetValue(HeightProperty, value);
+                SetValue(HeightProperty, (value / 2) * (value / 2));
             }
         }
 
@@ -51,16 +50,18 @@ namespace FluidWPF.ViewModels
             DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2));
 
 
-        private int countSteps = 6;
+
+
         public int CountSteps
         {
-            get => countSteps;
-            set
-            {
-                countSteps = (value == 0)? 1: (value < 0)? - value : value;
-                OnPropertyChanged();
-            }
+            get { return (int)GetValue(CountStepsProperty); }
+            set { SetValue(CountStepsProperty, value); }
         }
+
+        // Using a DependencyProperty as the backing store for CountSteps.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CountStepsProperty =
+            DependencyProperty.Register("CountSteps", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
+
         public int ScaleNet
         {
             get { return (int)GetValue(ScaleNetProperty); }
@@ -77,17 +78,18 @@ namespace FluidWPF.ViewModels
         private Thread _thread;
         private CancellationTokenSource _tokenSource;
 
-        private int progressStatus = 0;
         public int ProgressStatus
         {
-            get => progressStatus;
-            set
-            {
-                progressStatus = value;
-                OnPropertyChanged();
-            }
+            get { return (int)GetValue(ProgressStatusProperty); }
+            set { SetValue(ProgressStatusProperty, value); }
         }
-        
+
+        // Using a DependencyProperty as the backing store for ProgressStatus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ProgressStatusProperty =
+            DependencyProperty.Register("ProgressStatus", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
+
+
+
         private bool inProggress = false;
         public bool InProggress { get => inProggress;
             set 
@@ -113,19 +115,34 @@ namespace FluidWPF.ViewModels
         {
             InProggress = true;
             LogVerification logVerification = new LogVerification();
-            ProgressStatus = 0;
-            for (int i = 0; i < CountSteps; i++)
+            Dispatcher.Invoke(() => ProgressStatus = 0);
+            SolverFluid solverFluid = new SolverFluid(
+                Dispatcher.Invoke(() => Dt), 
+                Dispatcher.Invoke(() => InSpeed),
+                Dispatcher.Invoke(() => Height),
+                Dispatcher.Invoke(() => ScaleNet));
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            for (int i = 0; i < Dispatcher.Invoke(() => CountSteps); i++)
             {
                 if (((CancellationToken)status).IsCancellationRequested)
                 {
                     InProggress = false;
                     return;
                 }
-                    
-                Thread.Sleep(1000);
-                ProgressStatus = (int)(100*(i+1)/CountSteps);
+
+                //Thread.Sleep(1000);
+
+                solverFluid.Simulate(i, logVerification);
+
+                //
+                Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
+
             }
 
+            stopwatch.Stop();
+            logVerification.GetLog();
             InProggress = false;
         }
 

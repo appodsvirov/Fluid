@@ -11,22 +11,22 @@ namespace FluidV3
         /// <summary>
         ///  Начальная скорость
         /// </summary>
-        public const double inVel = 0.000375;
+        public const double inVel = 1.0;
         /// <summary>
         /// Квадрат ридиуса
         /// </summary>
-        public const double rad2 = 0.0006250;
+        public const double rad2 = 0.01;
         /// <summary>
         /// Количество шагов
         /// </summary>
-        public const int steps = 140001;
+        public const int steps = 501;
         /// <summary>
         /// Мастштаб сетки
         /// </summary>
-        public const double scaleNet = 2.0;
+        public const double scaleNet = 1.0;
         /// <summary>
         /// Шаг времени
         /// </summary>
-        public const double dt = 1 / 960;
+        public const double dt = 1 / 60;
     }
 }

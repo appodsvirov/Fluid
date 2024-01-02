@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FluidWPF.Models
 {
-    internal class LogVerification
+    public class LogVerification
     {
         StreamWriter sWPUp, sWMUp, sWUUp;
         StreamWriter sWPDown, sWMDown, sWUDown;
