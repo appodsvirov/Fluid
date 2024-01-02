@@ -18,10 +18,12 @@ namespace FluidWPF.Models
         public (int, int) pointUp ;
         public (int, int) pointDown ;
 
+        public int dlog;
+
         //public (int, int) pointUp = ((int)(83 * ScaleNet), (int)(52 * ScaleNet));
         //public (int, int) pointDown = ((int)(83 * ScaleNet), (int)(48 * ScaleNet));
 
-        public LogVerification(int ScaleNet = 1)
+        public LogVerification(int dlog = 500, int ScaleNet = 1)
         {
             pointUp =   ((int)(99 * ScaleNet), (int)(62 * ScaleNet));
             pointDown = ((int)(99 * ScaleNet), (int)(38 * ScaleNet));
@@ -31,6 +33,7 @@ namespace FluidWPF.Models
             sBMDown = new StringBuilder();
             sBUUp = new StringBuilder();
             sBUDown = new StringBuilder();
+            this.dlog = dlog;
         }
 
         public void Log(double p1, double p2, double m1, double m2, double u1, double u2)

@@ -86,6 +86,15 @@
                 </ComboBox.ItemsSource>
             </ComboBox>
 
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Шаг логирования:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <ComboBox Grid.Row="5" Grid.Column="1" SelectedItem="{Binding Variables.Dlog}"  VerticalAlignment="Center" Margin="5">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="{x:Type sys:Int32}">
+                        <sys:Int32>500</sys:Int32>
+                        <sys:Int32>1</sys:Int32>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+            </ComboBox>
         </Grid>
 
         <Grid Grid.Column="1" Grid.Row="0">
@@ -93,11 +102,18 @@
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Button Grid.Row="0" Command="{Binding Variables.ClikToSolve}" IsEnabled="{Binding Variables.IsFree, UpdateSourceTrigger=PropertyChanged}" Content="Решить" Margin="5"/>
             <Button Grid.Row="1" Command="{Binding Variables.ClikToStop}" IsEnabled="{Binding Variables.InProggress, UpdateSourceTrigger=PropertyChanged}" Content="Остановить" Margin="5"/>
             <ProgressBar Grid.Row="2" Minimum="0" Maximum="100" Value="{Binding Variables.ProgressStatus}" Margin="5"/>
-            <TextBlock Grid.Row="2" Text="{Binding Variables.ProgressStatus, StringFormat={}{0}%}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Прогресс выполнения:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding Variables.ProgressStatus, StringFormat={}{0}%;}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Text=" Время работы:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding Variables.Time,  StringFormat={}{0} сек.}"  VerticalAlignment="Center" HorizontalAlignment="Left" />
+            </StackPanel>
         </Grid>
 
         
