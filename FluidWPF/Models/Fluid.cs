@@ -1,180 +1,136 @@
-﻿using System;
+﻿using FluidWPF.Models.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FluidWPF.Models
 {
     public class Fluid
     {
-        #region Поля
-        /// <summary>
-        ///  Плотность
-        /// </summary>
-        public int density;
-        /// <summary>
-        /// Размерность x
-        /// </summary>
-        public int numX;
-        /// <summary>
-        /// Размерность y
-        /// </summary>
-        public int numY;
-        /// <summary>
-        /// Общее количество ячеек
-        /// </summary>
-        public int numCells;
-        /// <summary>
-        /// Размер 1 ячейки по одной оси
-        /// </summary>
+        public double density;
+        public double numX;
+        public double numY;
+        public double numCells;
         public double h;
-        /// <summary>
-        /// Скорость по x
-        /// </summary>
         public double[] u;
-        /// <summary>
-        /// Скорость по y
-        /// </summary>
         public double[] v;
-        /// <summary>
-        /// Новая скорость по x
-        /// </summary>
         public double[] newU;
-        /// <summary>
-        /// Новая скорость по y
-        /// </summary>
         public double[] newV;
-        /// <summary>
-        /// Давление в каждой ячейке
-        /// </summary>
         public double[] p;
-        /// <summary>
-        /// Массовый иточник в каждй ячейке 
-        /// </summary>
         public double[] s;
-        /// <summary>
-        ///  Масса в каждой ячейке
-        /// </summary>
         public double[] m;
-        /// <summary>
-        /// Новая масса в каждой ячейке
-        /// </summary>
         public double[] newM;
-        /// <summary>
-        /// Не используется
-        /// </summary>
         public double num;
-
-        public bool Speed = true; //to do
         public double overRelaxation = 1.9;
-        #endregion
-
-        public enum SearchValue
-        {
-            U_FIELD = 0,
-            V_FIELD = 1,
-            S_FIELD = 2
-        }
-
-        public Fluid(int density, int numX, int numY, double h)
+        public bool reynoldsNumberSwitching = false;
+        public Fluid(double density, double numX, double numY, double h)
         {
             this.density = density;
             this.numX = numX + 2;
             this.numY = numY + 2;
             this.numCells = this.numX * this.numY;
             this.h = h;
-            this.u = new double[this.numCells];
-            this.v = new double[this.numCells];
-            this.newU = new double[this.numCells];
-            this.newV = new double[this.numCells];
-            this.p = new double[this.numCells];
-            this.s = new double[this.numCells];
-            this.newM = new double[this.numCells];
-            this.m = Enumerable.Repeat(1.0, this.numCells).ToArray();
+            this.u = new double[(int)this.numCells];
+            this.v = new double[(int)this.numCells];
+            this.newU = new double[(int)this.numCells];
+            this.newV = new double[(int)this.numCells];
+            this.p = new double[(int)this.numCells];
+            this.s = new double[(int)this.numCells];
+            this.newM = new double[(int)this.numCells];
+            this.m = Enumerable.Repeat(1.0, (int)this.numCells).ToArray();
+
+
             num = numX * numY;
         }
 
         public void Integrate(double dt, double gravity) // Гравитация
         {
-            int n = this.numY;
+            var n = this.numY;
             for (var i = 1; i < this.numX; i++)
             {
                 for (var j = 1; j < this.numY - 1; j++)
                 {
-                    if (this.s[i * n + j] != 0.0 && this.s[i * n + j - 1] != 0.0)
+                    if (this.s[(int)(i * n + j)] != 0.0 && this.s[(int)(i * n + j - 1)] != 0.0)
                     {
-                        this.v[i * n + j] += gravity * dt;
+                        this.v[(int)(i * n + j)] += gravity * dt;
                     }
                 }
             }
         }
 
-        public void SolveIncompressibility(int numIters, double dt) // Несжимаемость
+
+        public void SolveIncompressibility(double numIters, double dt) // Несжимаемость
         {
 
-            int n = this.numY;
+            double n = this.numY;
             double cp = this.density * this.h / dt;
             //double cp = 1000;
-            for (int iter = 0; iter < numIters; iter++)
+            for (var iter = 0; iter < numIters; iter++)
             {
+
                 for (var i = 1; i < this.numX - 1; i++)
                 {
                     for (var j = 1; j < this.numY - 1; j++)
                     {
 
-                        if (this.s[i * n + j] == 0.0)
+                        if (this.s[(int)(i * n + j)] == 0.0)
                         {
                             continue;
                         }
 
-                        var s = this.s[i * n + j];
-                        var sx0 = this.s[(i - 1) * n + j];
-                        var sx1 = this.s[(i + 1) * n + j];
-                        var sy0 = this.s[i * n + j - 1];
-                        var sy1 = this.s[i * n + j + 1];
+                        var s = this.s[(int)(i * n + j)];
+                        var sx0 = this.s[(int)((i - 1) * n + j)];
+                        var sx1 = this.s[(int)((i + 1) * n + j)];
+                        var sy0 = this.s[(int)(i * n + j - 1)];
+                        var sy1 = this.s[(int)(i * n + j + 1)];
                         s = sx0 + sx1 + sy0 + sy1;
                         if (s == 0.0)
                         {
                             continue;
                         }
 
-                        var div = this.u[(i + 1) * n + j] - this.u[i * n + j] +
-                            this.v[(i * n + j) + 1] - this.v[i * n + j];
+                        var div = this.u[(int)((i + 1) * n + j)] - this.u[(int)(i * n + j)] +
+                            this.v[(int)(i * n + j) + 1] - this.v[(int)(i * n + j)];
 
                         var p = -div / s;
                         p *= overRelaxation;
 
 
-                        this.p[(i * n + j)] += cp * p;
+                        this.p[(int)(i * n + j)] += cp * p;
 
-                        this.u[(i * n + j)] -= sx0 * p;
-                        this.u[((i + 1) * n + j)] += sx1 * p;
-                        this.v[(i * n + j)] -= sy0 * p;
-                        this.v[(i * n + j) + 1] += sy1 * p;
+                        this.u[(int)(i * n + j)] -= sx0 * p;
+                        this.u[(int)((i + 1) * n + j)] += sx1 * p;
+                        this.v[(int)(i * n + j)] -= sy0 * p;
+                        this.v[(int)(i * n + j) + 1] += sy1 * p;
                     }
                 }
             }
         }
 
+
         public void Extrapolate() // Экстраполяция
         {
-            int n = this.numY;
+            double n = this.numY;
             for (var i = 0; i < this.numX; i++)
             {
-                this.u[(i * n + 0)] = this.u[(i * n + 1)];
-                this.u[(i * n + this.numY - 1)] = this.u[(i * n + this.numY - 2)];
+                this.u[(int)(i * n + 0)] = this.u[(int)(i * n + 1)];
+                this.u[(int)(i * n + this.numY - 1)] = this.u[(int)(i * n + this.numY - 2)];
             }
             for (var j = 0; j < this.numY; j++)
             {
-                this.v[(0 * n + j)] = this.v[(1 * n + j)];
-                this.v[((this.numX - 1) * n + j)] = this.v[((this.numX - 2) * n + j)];
+                this.v[(int)(0 * n + j)] = this.v[(int)(1 * n + j)];
+                this.v[(int)((this.numX - 1) * n + j)] = this.v[(int)((this.numX - 2) * n + j)];
+
             }
         }
 
         public double SampleField(double x, double y, SearchValue field)
         {
-            int n = this.numY;
+            double n = this.numY;
             double h = this.h;
             double h1 = 1.0 / h;
             double h2 = 0.5 * h;
@@ -218,29 +174,29 @@ namespace FluidWPF.Models
             return val;
         }
 
-        public double AvgU(int i, int j)
+        public double AvgU(double i, double j)
         {
             var n = this.numY;
-            var u = (this.u[(i * n + j - 1)] + this.u[(i * n + j)] +
-                this.u[((i + 1) * n + j - 1)] + this.u[((i + 1) * n + j)]) * 0.25;
+            var u = (this.u[(int)(i * n + j - 1)] + this.u[(int)(i * n + j)] +
+                this.u[(int)((i + 1) * n + j - 1)] + this.u[(int)((i + 1) * n + j)]) * 0.25;
             return u;
         }
 
-        public double AvgV(int i, int j)
+        public double AvgV(double i, double j)
         {
             var n = this.numY;
-            var v = (this.v[((i - 1) * n + j)] + this.v[(i * n + j)] +
-                this.v[((i - 1) * n + j) + 1] + this.v[(i * n + j) + 1]) * 0.25;
+            var v = (this.v[(int)((i - 1) * n + j)] + this.v[(int)(i * n + j)] +
+                this.v[(int)((i - 1) * n + j) + 1] + this.v[(int)(i * n + j) + 1]) * 0.25;
             return v;
         }
 
-        public void AdvectVel(double dt, int cnt) // Адвекция
+        public void AdvectVel(double dt,  double cnt) // Адвекция
         {
 
             Array.Copy(this.u, newU, this.u.Length); //this.newU.set(this.u); 
             Array.Copy(this.v, newV, this.v.Length); //this.newV.set(this.v);
 
-            int n = this.numY;
+            double n = this.numY;
             double h = this.h;
             double h2 = 0.5 * h;
 
@@ -252,28 +208,28 @@ namespace FluidWPF.Models
                     cnt++;
 
                     // Горизонтальная составляющая (u)
-                    if (this.s[(i * n + j)] != 0.0 && this.s[((i - 1) * n + j)] != 0.0 && j < this.numY - 1)
+                    if (this.s[(int)(i * n + j)] != 0.0 && this.s[(int)((i - 1) * n + j)] != 0.0 && j < this.numY - 1)
                     {
                         var x = i * h;
                         var y = j * h + h2;
-                        var u = this.u[(i * n + j)];
+                        var u = this.u[(int)(i * n + j)];
                         var v = this.AvgV(i, j);
                         x = x - dt * u;
                         y = y - dt * v;
                         u = this.SampleField(x, y, SearchValue.U_FIELD);
-                        this.newU[(i * n + j)] = u;
+                        this.newU[(int)(i * n + j)] = u;
                     }
                     // Вертикальная составляющая (v)
-                    if (this.s[(i * n + j)] != 0.0 && this.s[(i * n + j) - 1] != 0.0 && i < this.numX - 1)
+                    if (this.s[(int)(i * n + j)] != 0.0 && this.s[(int)(i * n + j) - 1] != 0.0 && i < this.numX - 1)
                     {
                         var x = i * h + h2;
                         var y = j * h;
                         var u = this.AvgU(i, j);
-                        var v = this.v[(i * n + j)];
+                        var v = this.v[(int)(i * n + j)];
                         x = x - dt * u;
                         y = y - dt * v;
                         v = this.SampleField(x, y, SearchValue.V_FIELD);
-                        this.newV[(i * n + j)] = v;
+                        this.newV[(int)(i * n + j)] = v;
                     }
                 }
             }
@@ -296,49 +252,49 @@ namespace FluidWPF.Models
                 for (var j = 1; j < this.numY - 1; j++)
                 {
 
-                    if (this.s[(i * n + j)] != 0.0)
+                    if (this.s[(int)(i * n + j)] != 0.0)
                     {
 
                         double u, v;
-                        if (Speed) // Переключение числа Рейнольдса
+                        if (reynoldsNumberSwitching) // Переключение числа Рейнольдса
                         {
-                            u = (this.u[(i * n + j)] + this.u[((i + 1) * n + j)]) * 0.03;   // Скорость
-                            v = (this.v[(i * n + j)] + this.v[(i * n + j + 1)]) * 0.03;
+                            u = (this.u[(int)(i * n + j)] + this.u[(int)((i + 1) * n + j)]) * 0.03;   // Скорость
+                            v = (this.v[(int)(i * n + j)] + this.v[(int)(i * n + j + 1)]) * 0.03;
                         }
                         else
                         {
-                            u = (this.u[(i * n + j)] + this.u[((i + 1) * n + j)]) * 0.5;    // Скорость
-                            v = (this.v[(i * n + j)] + this.v[(i * n + j + 1)]) * 0.5;
+                            u = (this.u[(int)(i * n + j)] + this.u[(int)((i + 1) * n + j)]) * 0.5;    // Скорость
+                            v = (this.v[(int)(i * n + j)] + this.v[(int)(i * n + j + 1)]) * 0.5;
                         }
 
                         double x = i * h + h2 - dt * u;
                         double y = j * h + h2 - dt * v;    // Направление
 
-                        this.newM[(i * n + j)] = this.SampleField(x, y, SearchValue.S_FIELD);
+                        this.newM[(int)(i * n + j)] = this.SampleField(x, y, SearchValue.S_FIELD);
                     }
                 }
             }
             Array.Copy(this.newM, this.m, this.newM.Length); //this.m.set(this.newM);
         }
 
-        public void Simulate(double dt, double gravity, int numIters, int cnt, LogVerification lf, int iterNum)
+        public void Simulate(double dt, double gravity, double numIters,  double cnt, LogVerification lf, int iterNum)
         {
+
             this.Integrate(dt, gravity);
 
-            this.p = Enumerable.Repeat(0.0, this.numCells).ToArray();//this.p.fill(0.0);
+            this.p = Enumerable.Repeat(0.0, (int)(this.numCells)).ToArray();//this.p.fill(0.0);
             this.SolveIncompressibility(numIters, dt);
 
             this.Extrapolate();
-            this.AdvectVel(dt, cnt);
+            this.AdvectVel(dt,  cnt);
             this.AdvectSmoke(dt);
 
-            if (lf != null && iterNum % 2 == 0)
+            if (lf != null && iterNum % 500 == 0)
             {
                 double n = numY;
-                lf.Log(p[(lf.pointUp.Item1 * numY + lf.pointUp.Item2)]);
+                lf.Log(p[(int)(lf.pointUp.Item1 * numY + lf.pointUp.Item2)]);
             }
         }
-
-
     }
 }
+

@@ -35,13 +35,14 @@ namespace FluidWPF.ViewModels
         // Using a DependencyProperty as the backing store for InSpeed.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InSpeedProperty =
             DependencyProperty.Register("InSpeed", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(1.0));
-
+        public double Rad2 { get; set; }
         public double Height
         {
             get { return (double)GetValue(HeightProperty); }
             set
             {
-                SetValue(HeightProperty, (value / 2) * (value / 2));
+                Rad2 = (value / 2) * (value / 2);
+                SetValue(HeightProperty, value);
             }
         }
 
@@ -119,7 +120,7 @@ namespace FluidWPF.ViewModels
             SolverFluid solverFluid = new SolverFluid(
                 Dispatcher.Invoke(() => Dt), 
                 Dispatcher.Invoke(() => InSpeed),
-                Dispatcher.Invoke(() => Height),
+                Dispatcher.Invoke(() => Rad2),
                 Dispatcher.Invoke(() => ScaleNet));
 
             Stopwatch stopwatch = new Stopwatch();
@@ -132,11 +133,8 @@ namespace FluidWPF.ViewModels
                     return;
                 }
 
-                //Thread.Sleep(1000);
+                solverFluid.Simulate(i, logVerification);// Solve
 
-                solverFluid.Simulate(i, logVerification);
-
-                //
                 Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
 
             }
