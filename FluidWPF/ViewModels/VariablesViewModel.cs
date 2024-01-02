@@ -29,12 +29,16 @@ namespace FluidWPF.ViewModels
         public double InSpeed
         {
             get { return (double)GetValue(InSpeedProperty); }
-            set { SetValue(InSpeedProperty, value); }
+            set
+            {
+                SetValue(InSpeedProperty, value);
+            }
         }
 
         // Using a DependencyProperty as the backing store for InSpeed.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InSpeedProperty =
-            DependencyProperty.Register("InSpeed", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(1.0));
+            DependencyProperty.Register("InSpeed", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(1.0, UpdateReynolds));
+
         public double Rad2 { get; set; }
         public double Height
         {
@@ -48,10 +52,7 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for Height.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeightProperty =
-            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2));
-
-
-
+            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2, UpdateReynolds));
 
         public int CountSteps
         {
@@ -71,7 +72,7 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for ScaleNet.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ScaleNetProperty =
-            DependencyProperty.Register("ScaleNet", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(1));
+            DependencyProperty.Register("ScaleNet", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(1, UpdateReynolds));
 
 
 
@@ -86,6 +87,31 @@ namespace FluidWPF.ViewModels
             DependencyProperty.Register("Dlog", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(500));
 
 
+
+        public string Reynolds
+        {
+            get { return (string)GetValue(ReynoldsProperty); }
+            set { SetValue(ReynoldsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Reynolds.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ReynoldsProperty =
+            DependencyProperty.Register("Reynolds", typeof(string), typeof(VariablesViewModel), new PropertyMetadata(3.334E5.ToString("E")));
+
+        private static void UpdateReynolds(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            VariablesViewModel vm = (VariablesViewModel)d;
+            if (vm != null)
+            {
+                // to do: захардкодил sim-ы, плотность и домэйны
+                vm.Reynolds =
+                (
+                    1000 * vm.InSpeed * vm.Height /
+                    ((1000.0 * Math.Pow((1.0 / (100.0*vm.ScaleNet)), 4) / vm.Dt))
+                )
+                .ToString("E");
+            }
+        }
 
         #endregion
 
@@ -107,13 +133,15 @@ namespace FluidWPF.ViewModels
 
 
         private bool inProggress = false;
-        public bool InProggress { get => inProggress;
-            set 
+        public bool InProggress
+        {
+            get => inProggress;
+            set
             {
                 IsFree = !value;
                 inProggress = value;
                 OnPropertyChanged();
-            } 
+            }
         }
 
         private bool isFree = true;
@@ -143,7 +171,7 @@ namespace FluidWPF.ViewModels
             LogVerification logVerification = new LogVerification(Dispatcher.Invoke(() => Dlog));
             Dispatcher.Invoke(() => ProgressStatus = 0);
             SolverFluid solverFluid = new SolverFluid(
-                Dispatcher.Invoke(() => Dt), 
+                Dispatcher.Invoke(() => Dt),
                 Dispatcher.Invoke(() => InSpeed),
                 Dispatcher.Invoke(() => Rad2),
                 Dispatcher.Invoke(() => ScaleNet));
