@@ -14,7 +14,7 @@
     </Window.DataContext>
 
 
-    
+
     <!--Window.Background>
         <SolidColorBrush>
             <SolidColorBrush.Color>
@@ -69,7 +69,7 @@
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Количество шагов (CountSteps):"  VerticalAlignment="Center" HorizontalAlignment="Right"/>
             <TextBox Grid.Row="1" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" Text="{Binding Variables.CountSteps, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"  Margin="5"/>
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Начальная Скорость (InSpeed):"  VerticalAlignment="Center" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="2" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" Text="{Binding Variables.InSpeed, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Center" Margin="5" TextChanged="TextBox_TextChanged"/>
+            <TextBox Grid.Row="2" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" Text="{Binding Variables.InSpeed, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Center" Margin="5"/>
 
             <TextBlock Grid.Row="3" Grid.Column="0" Text="Высота (Height): "  VerticalAlignment="Center" HorizontalAlignment="Right"/>
             <ComboBox Grid.Row="3" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" SelectedItem="{Binding Variables.Height}"  VerticalAlignment="Center" Margin="5">
@@ -105,15 +105,36 @@
             <ComboBox Grid.Row="5" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" SelectedItem="{Binding Variables.Dlog}"  VerticalAlignment="Center" Margin="5">
                 <ComboBox.ItemsSource>
                     <x:Array Type="{x:Type sys:Int32}">
-                        <sys:Int32>500</sys:Int32>
+                        <sys:Int32>16</sys:Int32>
+                        <sys:Int32>8</sys:Int32>
+                        <sys:Int32>4</sys:Int32>
                         <sys:Int32>2</sys:Int32>
                         <sys:Int32>1</sys:Int32>
                     </x:Array>
                 </ComboBox.ItemsSource>
             </ComboBox>
 
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Логирование начиная с шага:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <ComboBox Grid.Row="6" Grid.Column="1" IsEnabled="{Binding Variables.IsFree}" SelectedItem="{Binding Variables.Start}"  VerticalAlignment="Center" Margin="5">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="{x:Type sys:Int32}">
+                        <sys:Int32>0</sys:Int32>
+                        <sys:Int32>1900</sys:Int32>
+                        <sys:Int32>10000</sys:Int32>
+                        <sys:Int32>20000</sys:Int32>
+                        <sys:Int32>30000</sys:Int32>
+                        <sys:Int32>40000</sys:Int32>
+                        <sys:Int32>50000</sys:Int32>
+                        <sys:Int32>60000</sys:Int32>
+                        <sys:Int32>70000</sys:Int32>
+                        <sys:Int32>80000</sys:Int32>
+                        <sys:Int32>90000</sys:Int32>
+                        <sys:Int32>100000</sys:Int32>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+            </ComboBox>
 
-            <Grid Grid.Row="6" Grid.ColumnSpan="2">
+            <Grid Grid.Row="7" Grid.ColumnSpan="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1*"/>
@@ -136,14 +157,23 @@
             </Grid.RowDefinitions>
             <Button Grid.Row="0" Command="{Binding Variables.ClikToSolve}" IsEnabled="{Binding Variables.IsFree, UpdateSourceTrigger=PropertyChanged}" Content="Решить" Margin="5"/>
             <Button Grid.Row="1" Command="{Binding Variables.ClikToStop}" IsEnabled="{Binding Variables.InProggress, UpdateSourceTrigger=PropertyChanged}" Content="Остановить" Margin="5"/>
-            <ProgressBar Grid.Row="2" Minimum="0" Maximum="100" Value="{Binding Variables.ProgressStatus}" Margin="5"/>
+            <ProgressBar Grid.Row="2"  Grid.RowSpan="2" Minimum="0" Maximum="100" Value="{Binding Variables.ProgressStatus}" Margin="5"/>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Прогресс выполнения:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding Variables.ProgressStatus, StringFormat={}{0}%;}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <TextBlock Text=" Время работы:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                <TextBlock Text="{Binding Variables.Time,  StringFormat={}{0} сек.}"  VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <StackPanel Grid.Row="2" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text=" Время работы:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding Variables.Time,  StringFormat={}{0} сек.}"  VerticalAlignment="Center" HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Прогресс выполнения:" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding Variables.ProgressStatus, StringFormat={}{0}%;}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Экономный режим" VerticalAlignment="Center"/>
+                    <CheckBox IsChecked="{Binding Variables.Saving}" Margin="5" VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
+
         </Grid>
 
 

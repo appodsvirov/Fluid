@@ -68,7 +68,8 @@ namespace FluidWPF.Models
 
             int n = this.numY;
             double cp = this.density * this.h / dt;
-            //double cp = 1000;
+            cp = 2*1.002E-03 / Math.Pow(this.h, 3);
+
             for (var iter = 0; iter < numIters; iter++)
             {
 
@@ -287,7 +288,7 @@ namespace FluidWPF.Models
             this.AdvectVel(dt);
             this.AdvectSmoke(dt);
 
-            if (lf != null && iterNum % lf.dlog == 0)
+            if (lf != null && iterNum >= lf.start && iterNum % lf.dlog == 0)
             {
                 double n = numY;
                 lf.Log(p[(lf.pointUp.Item1 * numY + lf.pointUp.Item2)]);

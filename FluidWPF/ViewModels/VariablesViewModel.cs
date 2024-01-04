@@ -97,6 +97,16 @@ namespace FluidWPF.ViewModels
 
 
 
+        public int Start
+        {
+            get { return (int)GetValue(StartProperty); }
+            set { SetValue(StartProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Start.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty StartProperty =
+            DependencyProperty.Register("Start", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
+
         public string Reynolds
         {
             get { return (string)GetValue(ReynoldsProperty); }
@@ -114,9 +124,9 @@ namespace FluidWPF.ViewModels
             {
                 // to do: захардкодил sim-ы, плотность и домэйны
                 vm.Reynolds =
-                Math.Round( (
+                Math.Round((
                     1000 * vm.InSpeed * vm.Height /
-                    ((1000.0 * Math.Pow((1.0 / (100.0 * vm.ScaleNet)), 4) / (1.0/vm.Dt)))
+                    ((1000.0 * Math.Pow((1.0 / (100.0 * vm.ScaleNet)), 4) / (1.0 / vm.Dt)))
                 ), 2)
                 .ToString("E");
             }
@@ -174,24 +184,37 @@ namespace FluidWPF.ViewModels
         public static readonly DependencyProperty TimeProperty =
             DependencyProperty.Register("Time", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.0));
 
+        private bool saving = false;
+        public bool Saving
+        {
+            get => saving;
+            set
+            {
+                saving = value;
+                OnPropertyChanged();
+            }
+        }
         public void Solve(object status)
         {
             InProggress = true;
             LogVerification logVerification = new LogVerification(
                 Dispatcher.Invoke(() => Dlog),
+                Dispatcher.Invoke(() => Start),
                 Dispatcher.Invoke(() => Height),
-                Dispatcher.Invoke(() => ScaleNet) 
+                Dispatcher.Invoke(() => ScaleNet)
                 );
             Dispatcher.Invoke(() => ProgressStatus = 0);
             SolverFluid solverFluid = new SolverFluid(
-                Dispatcher.Invoke(() => 1.0/Dt),
+                Dispatcher.Invoke(() => 1.0 / Dt),
                 Dispatcher.Invoke(() => InSpeed),
                 Dispatcher.Invoke(() => Rad2),
                 Dispatcher.Invoke(() => ScaleNet));
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            for (int i = 0; i < Dispatcher.Invoke(() => CountSteps); i++)
+            int countSteps = Dispatcher.Invoke(() => CountSteps);
+
+            for (int i = 0; i < countSteps; i++)
             {
                 if (((CancellationToken)status).IsCancellationRequested)
                 {
@@ -200,16 +223,23 @@ namespace FluidWPF.ViewModels
                 }
 
                 solverFluid.Simulate(i, logVerification);// Solve
-
-                Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
+                if (!Saving)
+                {
+                    Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
+                    Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
+                }
+            }
+            if (Saving)
+            {
+                Saving = false;
+                Dispatcher.Invoke(() => ProgressStatus = 100);
                 Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
             }
-
             stopwatch.Stop();
             logVerification.GetLog();
             InProggress = false;
-        }
 
+        }
         public ICommand ClikToSolve
         {
             get
