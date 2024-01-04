@@ -4,6 +4,7 @@ using FluidWPF.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,15 +17,15 @@ namespace FluidWPF.ViewModels
     public class VariablesViewModel : BaseVM
     {
         #region Вводимые переменные
-        public double Dt
+        public int Dt
         {
-            get { return (double)GetValue(DtProperty); }
+            get { return (int)GetValue(DtProperty); }
             set { SetValue(DtProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Dt.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DtProperty =
-            DependencyProperty.Register("Dt", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.01667));
+            DependencyProperty.Register("Dt", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(60, UpdateReynolds));
 
         public double InSpeed
         {
@@ -39,7 +40,7 @@ namespace FluidWPF.ViewModels
         public static readonly DependencyProperty InSpeedProperty =
             DependencyProperty.Register("InSpeed", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(1.0, UpdateReynolds));
 
-        public double Rad2 { get; set; }
+        public double Rad2 { get; set; } = 0.01;
         public double Height
         {
             get { return (double)GetValue(HeightProperty); }
@@ -52,7 +53,15 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for Height.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeightProperty =
-            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2, UpdateReynolds));
+            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2, (d, e) =>
+            {
+                VariablesViewModel vm = (VariablesViewModel)d;
+                if (vm != null)
+                {
+                    vm.Rad2 = (vm.Height / 2) * (vm.Height / 2);
+                    UpdateReynolds(d, e);
+                }
+            }));
 
         public int CountSteps
         {
@@ -62,7 +71,7 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for CountSteps.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CountStepsProperty =
-            DependencyProperty.Register("CountSteps", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
+            DependencyProperty.Register("CountSteps", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(2000));
 
         public int ScaleNet
         {
@@ -84,7 +93,7 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for Dlog.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DlogProperty =
-            DependencyProperty.Register("Dlog", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(500));
+            DependencyProperty.Register("Dlog", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(1));
 
 
 
@@ -105,10 +114,10 @@ namespace FluidWPF.ViewModels
             {
                 // to do: захардкодил sim-ы, плотность и домэйны
                 vm.Reynolds =
-                (
+                Math.Round( (
                     1000 * vm.InSpeed * vm.Height /
-                    ((1000.0 * Math.Pow((1.0 / (100.0*vm.ScaleNet)), 4) / vm.Dt))
-                )
+                    ((1000.0 * Math.Pow((1.0 / (100.0 * vm.ScaleNet)), 4) / (1.0/vm.Dt)))
+                ), 2)
                 .ToString("E");
             }
         }
@@ -168,10 +177,14 @@ namespace FluidWPF.ViewModels
         public void Solve(object status)
         {
             InProggress = true;
-            LogVerification logVerification = new LogVerification(Dispatcher.Invoke(() => Dlog));
+            LogVerification logVerification = new LogVerification(
+                Dispatcher.Invoke(() => Dlog),
+                Dispatcher.Invoke(() => Height),
+                Dispatcher.Invoke(() => ScaleNet) 
+                );
             Dispatcher.Invoke(() => ProgressStatus = 0);
             SolverFluid solverFluid = new SolverFluid(
-                Dispatcher.Invoke(() => Dt),
+                Dispatcher.Invoke(() => 1.0/Dt),
                 Dispatcher.Invoke(() => InSpeed),
                 Dispatcher.Invoke(() => Rad2),
                 Dispatcher.Invoke(() => ScaleNet));

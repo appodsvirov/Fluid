@@ -25,8 +25,8 @@ namespace FluidWPF.Models
         public double[] m;
         public double[] newM;
         public double num;
+
         public double overRelaxation = 1.9;
-        public bool reynoldsNumberSwitching = false;
         public Fluid(int density, int numX, int numY, double h)
         {
             this.density = density;
@@ -130,7 +130,7 @@ namespace FluidWPF.Models
 
         public double SampleField(double x, double y, SearchValue field)
         {
-            double n = this.numY;
+            int n = this.numY;
             double h = this.h;
             double h1 = 1.0 / h;
             double h2 = 0.5 * h;
@@ -155,21 +155,21 @@ namespace FluidWPF.Models
                 case SearchValue.S_FIELD: f = this.m; dx = h2; dy = h2; break;
             }
 
-            var x0 = Math.Min(Math.Floor((x - dx) * h1), this.numX - 1);
+            var x0 = (int)Math.Min(Math.Floor((x - dx) * h1), this.numX - 1);
             var tx = ((x - dx) - x0 * h) * h1;
-            var x1 = Math.Min(x0 + 1, this.numX - 1);
+            var x1 = (int) Math.Min(x0 + 1, this.numX - 1);
 
-            var y0 = Math.Min(Math.Floor((y - dy) * h1), this.numY - 1);
+            var y0 = (int)Math.Min(Math.Floor((y - dy) * h1), this.numY - 1);
             var ty = ((y - dy) - y0 * h) * h1;
-            var y1 = Math.Min(y0 + 1, this.numY - 1);
+            var y1 = (int)Math.Min(y0 + 1, this.numY - 1);
 
             var sx = 1.0 - tx;
             var sy = 1.0 - ty;
 
-            var val = sx * sy * f[(int)(x0 * n + y0)] +
-                tx * sy * f[(int)(x1 * n + y0)] +
-                tx * ty * f[(int)(x1 * n + y1)] +
-                sx * ty * f[(int)(x0 * n + y1)];
+            var val = sx * sy * f[(x0 * n + y0)] +
+                tx * sy * f[(x1 * n + y0)] +
+                tx * ty * f[(x1 * n + y1)] +
+                sx * ty * f[(x0 * n + y1)];
 
             return val;
         }
@@ -190,9 +190,8 @@ namespace FluidWPF.Models
             return v;
         }
 
-        public void AdvectVel(double dt, int cnt) // Адвекция
+        public void AdvectVel(double dt) // Адвекция
         {
-
             Array.Copy(this.u, newU, this.u.Length); //this.newU.set(this.u); 
             Array.Copy(this.v, newV, this.v.Length); //this.newV.set(this.v);
 
@@ -205,7 +204,6 @@ namespace FluidWPF.Models
                 for (int j = 1; j < this.numY; j++)
                 {
 
-                    cnt++;
 
                     // Горизонтальная составляющая (u)
                     if (this.s[(i * n + j)] != 0.0 && this.s[((i - 1) * n + j)] != 0.0 && j < this.numY - 1)
@@ -256,7 +254,7 @@ namespace FluidWPF.Models
                     {
 
                         double u, v;
-                        if (reynoldsNumberSwitching) // Переключение числа Рейнольдса
+                        if (false) // Переключение числа Рейнольдса
                         {
                             u = (this.u[(i * n + j)] + this.u[((i + 1) * n + j)]) * 0.03;   // Скорость
                             v = (this.v[(i * n + j)] + this.v[(i * n + j + 1)]) * 0.03;
@@ -277,7 +275,7 @@ namespace FluidWPF.Models
             Array.Copy(this.newM, this.m, this.newM.Length); //this.m.set(this.newM);
         }
 
-        public void Simulate(double dt, double gravity, int numIters, int cnt, LogVerification lf, int iterNum)
+        public void Simulate(double dt, double gravity, int numIters,  double cnt, LogVerification lf, int iterNum)
         {
 
             this.Integrate(dt, gravity);
@@ -286,11 +284,12 @@ namespace FluidWPF.Models
             this.SolveIncompressibility(numIters, dt);
 
             this.Extrapolate();
-            this.AdvectVel(dt,  cnt);
+            this.AdvectVel(dt);
             this.AdvectSmoke(dt);
 
             if (lf != null && iterNum % lf.dlog == 0)
             {
+                double n = numY;
                 lf.Log(p[(lf.pointUp.Item1 * numY + lf.pointUp.Item2)]);
             }
         }
