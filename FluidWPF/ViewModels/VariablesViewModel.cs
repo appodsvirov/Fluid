@@ -233,8 +233,7 @@ namespace FluidWPF.ViewModels
                 {
                     //Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
                     //Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
-                    OnSolveRequestedUpdate(id, Dispatcher.Invoke(() =>
-                    (int)(100 * (i + 1) / CountSteps)));
+                    OnSolveRequestedUpdate(id, (int)(100 * (i + 1) / countSteps));
                 }
             }
             if (Saving)
