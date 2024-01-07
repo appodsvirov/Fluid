@@ -157,19 +157,7 @@ namespace FluidWPF.ViewModels
             get => inProggress;
             set
             {
-                IsFree = !value;
                 inProggress = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool isFree = true;
-        public bool IsFree
-        {
-            get => isFree;
-            set
-            {
-                isFree = value;
                 OnPropertyChanged();
             }
         }
@@ -194,9 +182,27 @@ namespace FluidWPF.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        public event EventHandler<Variables> SolveRequested;
+        private int OnSolveRequestedAdd()
+        {
+            var tmp = new Variables( Variables.count.ToString() + ": " +
+                    Dispatcher.Invoke(() => Reynolds.ToString()));
+            SolveRequested?.Invoke(this, tmp);
+            return tmp.Id;
+        }
+        private void OnSolveRequestedUpdate(int id, int progress)
+        {
+            SolveRequested?.Invoke(this,
+                new Variables(
+                    id,
+                    progress));
+        }
+
         public void Solve(object status)
         {
             InProggress = true;
+            int id = OnSolveRequestedAdd();
             LogVerification logVerification = new LogVerification(
                 Dispatcher.Invoke(() => Dlog),
                 Dispatcher.Invoke(() => Start),
@@ -225,8 +231,10 @@ namespace FluidWPF.ViewModels
                 solverFluid.Simulate(i, logVerification);// Solve
                 if (!Saving)
                 {
-                    Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
-                    Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
+                    //Dispatcher.Invoke(() => ProgressStatus = (int)(100 * (i + 1) / CountSteps));
+                    //Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
+                    OnSolveRequestedUpdate(id, Dispatcher.Invoke(() =>
+                    (int)(100 * (i + 1) / CountSteps)));
                 }
             }
             if (Saving)
@@ -236,7 +244,7 @@ namespace FluidWPF.ViewModels
                 Dispatcher.Invoke(() => Time = stopwatch.ElapsedMilliseconds / 1000.0);
             }
             stopwatch.Stop();
-            logVerification.GetLog();
+            logVerification.GetLog($"P{id}.txt");
             InProggress = false;
 
         }

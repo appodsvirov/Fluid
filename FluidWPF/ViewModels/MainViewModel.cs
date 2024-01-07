@@ -15,9 +15,12 @@ namespace FluidWPF.ViewModels
     public class MainViewModel:BaseVM
     {
         public VariablesViewModel Variables { get; set; }
+        public ScenarioManagementViewModel Scenarios { get; set; }
         public MainViewModel() 
         { 
             Variables = new VariablesViewModel();
+            Scenarios = new ScenarioManagementViewModel();
+            Variables.SolveRequested += Scenarios.ScenarioRequeste;
         }
     }
 }
