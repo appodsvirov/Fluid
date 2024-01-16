@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace FluidWPF.ViewModels
@@ -53,7 +54,7 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for Height.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeightProperty =
-            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.2, (d, e) =>
+            DependencyProperty.Register("Height", typeof(double), typeof(VariablesViewModel), new PropertyMetadata(0.1, (d, e) =>
             {
                 VariablesViewModel vm = (VariablesViewModel)d;
                 if (vm != null)
@@ -115,21 +116,22 @@ namespace FluidWPF.ViewModels
 
         // Using a DependencyProperty as the backing store for Reynolds.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ReynoldsProperty =
-            DependencyProperty.Register("Reynolds", typeof(string), typeof(VariablesViewModel), new PropertyMetadata(3.334E5.ToString("E")));
+            DependencyProperty.Register("Reynolds", typeof(string), typeof(VariablesViewModel), new PropertyMetadata(1E5.ToString("E")));
 
         private static void UpdateReynolds(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             VariablesViewModel vm = (VariablesViewModel)d;
             if (vm != null)
             {
-                // to do: захардкодил sim-ы, плотность и домэйны
-                vm.Reynolds =
-                Math.Round((
-                    1000 * vm.InSpeed * vm.Height /
-                    ((1000.0 * Math.Pow((1.0 / (100.0 * vm.ScaleNet)), 4) / (1.0 / vm.Dt)))
-                ), 2)
-                .ToString("E");
-            }
+                // to do: захардкодил плотность и вязкость. Сделать события!
+                vm.Reynolds = ((1000 * vm.InSpeed * vm.Height) / 1E-03).ToString("E");
+
+                //Math.Round((
+                //    1000 * vm.InSpeed * vm.Height /
+                //    ((1000.0 * Math.Pow((1.0 / (100.0 * vm.ScaleNet)), 4) / (1.0 / vm.Dt)))
+                //), 2)
+                //.ToString("E");
+            } // 1.002E-03 / Math.Pow(this.h, 3);
         }
 
         #endregion
@@ -256,6 +258,17 @@ namespace FluidWPF.ViewModels
                     _tokenSource = new CancellationTokenSource();
                     _thread = new Thread(Solve) { IsBackground = true };
                     _thread.Start(_tokenSource.Token);
+                });
+            }
+        }
+
+        public ICommand ClikToCopy
+        {
+            get
+            {
+                return new DelegateCommand((p) =>
+                {
+                    Clipboard.SetText(Reynolds);
                 });
             }
         }

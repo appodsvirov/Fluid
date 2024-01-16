@@ -67,8 +67,7 @@ namespace FluidWPF.Models
         {
 
             int n = this.numY;
-            //double cp = this.density * this.h / dt;
-            double cp = 1.002E-03 / Math.Pow(this.h, 3);
+            double cp = this.density * this.h / dt;
 
             for (var iter = 0; iter < numIters; iter++)
             {

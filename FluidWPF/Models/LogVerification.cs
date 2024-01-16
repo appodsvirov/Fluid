@@ -28,14 +28,32 @@ namespace FluidWPF.Models
         {
             if (ScaleNet == 1)
             {
-                pointUp = ((int)((80 + (height / 2) * 100 + 10) * ScaleNet), (int)((50 + (height / 2) * 100) * ScaleNet));
-                pointDown = ((int)((80 + height * 100 + 10) * ScaleNet), (int)((50 + height / 2) * ScaleNet));
+                if(height == 0.1)
+                {
+                    pointUp = (89,55);
+                }
+                else
+                {
+                    pointUp = ((int)((80 + (height * 0.5) * 100) * ScaleNet), (int)((50 + (height / 2) * 100) * ScaleNet));
+                }
+            }
+            else if (ScaleNet == 2)
+            {
+                if (height == 0.1)
+                {
+                    pointUp = (169, 110);
+                    pointUp = (89*2, 110);
+                }
+                else
+                {
+                    pointUp = ((int)((80 + (height * 0.5) * 100) * ScaleNet), (int)((50 + (height / 2) * 100) * ScaleNet));
+                }
             }
             else
             {
                 pointUp = ((int)((80 + (height * 0.5) * 100) * ScaleNet), (int)((50 + (height / 2) * 100) * ScaleNet));
-                pointDown = ((int)((80 + height * 100 + 10) * ScaleNet), (int)((50 + height / 2) * ScaleNet));
             }
+            pointDown = ((int)((80 + height * 100 + 10) * ScaleNet), (int)((50 + height / 2) * ScaleNet));
             sBPUp = new StringBuilder();
             sBPDown = new StringBuilder();
             sBMUp = new StringBuilder();

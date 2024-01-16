@@ -59,6 +59,9 @@
             <ComboBox Grid.Row="0" Grid.Column="1" SelectedItem="{Binding Variables.Dt}"  VerticalAlignment="Center"  Margin="0,5,5,5">
                 <ComboBox.ItemsSource>
                     <x:Array Type="{x:Type sys:Int32}">
+                        <sys:Int32>3</sys:Int32>
+                        <sys:Int32>10</sys:Int32>
+                        <sys:Int32>15</sys:Int32>
                         <sys:Int32>30</sys:Int32>
                         <sys:Int32>60</sys:Int32>
                         <sys:Int32>120</sys:Int32>
@@ -69,24 +72,20 @@
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Количество шагов (CountSteps):"  VerticalAlignment="Center" HorizontalAlignment="Right"/>
             <TextBox Grid.Row="1" Grid.Column="1"  Text="{Binding Variables.CountSteps, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"  Margin="5"/>
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Начальная Скорость (InSpeed):"  VerticalAlignment="Center" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="2" Grid.Column="1"  Text="{Binding Variables.InSpeed, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Center" Margin="5"/>
-
+            <Grid Grid.Row="2" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="7*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Variables.InSpeed, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Center" Margin="5"/>
+                <ScrollBar Grid.Column="1" Value="{Binding Variables.InSpeed}" HorizontalAlignment="Right" Margin="0 0 5 0" Minimum="0.01" Maximum="10" SmallChange="0.01" />
+            </Grid>
             <TextBlock Grid.Row="3" Grid.Column="0" Text="Высота (Height): "  VerticalAlignment="Center" HorizontalAlignment="Right"/>
             <ComboBox Grid.Row="3" Grid.Column="1"  SelectedItem="{Binding Variables.Height}"  VerticalAlignment="Center" Margin="5">
                 <ComboBox.ItemsSource>
                     <x:Array Type="{x:Type sys:Double}">
-                        <sys:Double>0.005</sys:Double>
-                        <sys:Double>0.01</sys:Double>
-                        <sys:Double>0.05</sys:Double>
                         <sys:Double>0.10</sys:Double>
-                        <sys:Double>0.15</sys:Double>
                         <sys:Double>0.20</sys:Double>
-                        <sys:Double>0.25</sys:Double>
-                        <sys:Double>0.30</sys:Double>
-                        <sys:Double>0.35</sys:Double>
-                        <sys:Double>0.40</sys:Double>
-                        <sys:Double>0.45</sys:Double>
-                        <sys:Double>0.50</sys:Double>
                     </x:Array>
                 </ComboBox.ItemsSource>
             </ComboBox>
@@ -105,11 +104,12 @@
             <ComboBox Grid.Row="5" Grid.Column="1"  SelectedItem="{Binding Variables.Dlog}"  VerticalAlignment="Center" Margin="5">
                 <ComboBox.ItemsSource>
                     <x:Array Type="{x:Type sys:Int32}">
-                        <sys:Int32>16</sys:Int32>
-                        <sys:Int32>8</sys:Int32>
-                        <sys:Int32>4</sys:Int32>
-                        <sys:Int32>2</sys:Int32>
                         <sys:Int32>1</sys:Int32>
+                        <sys:Int32>2</sys:Int32>
+                        <sys:Int32>4</sys:Int32>
+                        <sys:Int32>8</sys:Int32>
+                        <sys:Int32>16</sys:Int32>
+                        
                     </x:Array>
                 </ComboBox.ItemsSource>
             </ComboBox>
@@ -140,8 +140,22 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Число Рейнодльса: " VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5"/>
-                <Border  Grid.Column="1" Grid.ColumnSpan="2" Margin="5" BorderBrush="Gainsboro" BorderThickness="1" Background="Gainsboro">
-                    <TextBlock Text="{Binding Variables.Reynolds, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5"/>
+                <Border  Grid.Column="1" Grid.ColumnSpan="2" Margin="5 0 5 0" BorderBrush="Gainsboro" BorderThickness="1" Background="Gainsboro" >
+                    <TextBlock HorizontalAlignment="Center" FontSize="22" Text="{Binding Variables.Reynolds, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center">
+                        <TextBlock.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding Variables.ClikToCopy}"/>
+                        </TextBlock.InputBindings>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#FF950093"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
                 </Border>
             </Grid>
 
@@ -186,7 +200,7 @@
                                 <ColumnDefinition Width="1*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            <ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Completion, UpdateSourceTrigger=PropertyChanged}" Margin="5, 5, 0 ,0"/>
+                            <ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Completion, UpdateSourceTrigger=PropertyChanged}" Margin="15, 5, 5 ,0"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
