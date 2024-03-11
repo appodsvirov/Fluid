@@ -27,6 +27,8 @@ namespace FluidWPF.Models
         public double num;
 
         public double overRelaxation = 1.9;
+
+        private BaldwinLomaxModel _turbulence;
         public Fluid(int density, int numX, int numY, double h)
         {
             this.density = density;
@@ -45,6 +47,8 @@ namespace FluidWPF.Models
 
 
             num = numX * numY;
+
+            _turbulence = new(this); 
         }
 
         public void Integrate(double dt, double gravity) // Гравитация
@@ -174,15 +178,27 @@ namespace FluidWPF.Models
             return val;
         }
 
-        public double AvgU(int i, int j)
+        public double AvgU(int i, int j, bool solveTurbulence = true)
         {
             var n = this.numY;
             var u = (this.u[(i * n + j - 1)] + this.u[(i * n + j)] +
                 this.u[((i + 1) * n + j - 1)] + this.u[((i + 1) * n + j)]) * 0.25;
+
+            if (solveTurbulence)
+            {
+                var dynamicU = _turbulence.SolveDynamicSpeed(
+                    this.u[i * n + j],
+                    u,
+                    j,
+                    this.u,
+                    this.v
+                    );
+                return u + dynamicU;
+            }
             return u;
         }
 
-        public double AvgV(int i, int j)
+        public double AvgV(int i, int j, bool solveTurbulence = true)
         {
             var n = this.numY;
             var v = (this.v[((i - 1) * n + j)] + this.v[(i * n + j)] +
@@ -277,7 +293,6 @@ namespace FluidWPF.Models
 
         public void Simulate(double dt, double gravity, int numIters,  double cnt, LogVerification lf, int iterNum)
         {
-
             this.Integrate(dt, gravity);
 
             this.p = Enumerable.Repeat(0.0, (this.numCells)).ToArray();//this.p.fill(0.0);
