@@ -1,6 +1,7 @@
 ﻿using FluidWPF.Abstract;
 using FluidWPF.Models;
 using FluidWPF.Utilities;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -151,7 +152,7 @@ namespace FluidWPF.ViewModels
         public static readonly DependencyProperty ProgressStatusProperty =
             DependencyProperty.Register("ProgressStatus", typeof(int), typeof(VariablesViewModel), new PropertyMetadata(0));
 
-
+        [Reactive] public bool IsSolveTurbulence { get; set; } = false;
 
         private bool inProggress = false;
         public bool InProggress
@@ -216,7 +217,9 @@ namespace FluidWPF.ViewModels
                 Dispatcher.Invoke(() => 1.0 / Dt),
                 Dispatcher.Invoke(() => InSpeed),
                 Dispatcher.Invoke(() => Rad2),
-                Dispatcher.Invoke(() => ScaleNet));
+                Dispatcher.Invoke(() => ScaleNet),
+                IsSolveTurbulence,
+                0);
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();

@@ -22,7 +22,7 @@ namespace FluidWPF.Models
         public Fluid fluid = null;
         public bool Speed = false;
         public double a = 0.0;
-        public double obstacle = 0;
+        public int _obstacle = 0;
         public double x_late = 0.0;
         public double y_late = 0.0;
 
@@ -41,8 +41,9 @@ namespace FluidWPF.Models
         public double inSpeed = 1.0;
         public int scaleNet = 1;
         public double rad2 = 0.01;
+        public bool IsSolveTurbulence;
 
-        public SolverFluid(double dt, double inSpeed, double rad2, int scaleNet)
+        public SolverFluid(double dt, double inSpeed, double rad2, int scaleNet, bool isSolveTurbulence, int obstacle)
         {
             cScale = canvasHeight / simHeight;
             simWidth = canvasWidth / cScale;
@@ -50,8 +51,10 @@ namespace FluidWPF.Models
             this.inSpeed = inSpeed;
             this.rad2 = rad2;
             this.scaleNet = scaleNet;
-
+            IsSolveTurbulence = isSolveTurbulence;
+            _obstacle = obstacle;
             SetupScene();
+            
         }
         void SetupScene()
         {
@@ -65,7 +68,7 @@ namespace FluidWPF.Models
             int numY = (int)Math.Floor(domainHeight / h);
             int density = 1000;
 
-            Fluid f = fluid = new Fluid(density, numX, numY, h);
+            Fluid f = fluid = new Fluid(density, numX, numY, h, IsSolveTurbulence);
 
             int n = f.numY;
 
@@ -87,7 +90,7 @@ namespace FluidWPF.Models
                 }
             }
 
-            double pipeH = 0.1 * f.numY;                               //Толщина струи дыма
+            double pipeH = 1.0 * f.numY;                               //Толщина струи дыма
             int minJ = (int)Math.Floor(0.5 * f.numY - 0.5 * pipeH);
             int maxJ = (int)Math.Floor(0.5 * f.numY + 0.5 * pipeH);
 
@@ -140,7 +143,7 @@ namespace FluidWPF.Models
 
                     // ================ Окружность ==========================================================================================================================
                     //0.01
-                    if (obstacle == 0 &&
+                    if (_obstacle == 0 &&
                         (dxR * dxR + dyR * dyR < rad2)) // rr
                     {
                         f.s[(i * n + j)] = 0.0;
@@ -150,10 +153,27 @@ namespace FluidWPF.Models
                         f.v[(i * n + j)] = vy;
                         f.v[(i * n + j) + 1] = vy;
                     }
+                    // ================ 4 Цилиндра ==========================================================================================================================
+                    var diffRad = 0.2;
+                    if (_obstacle == 44 && (
+                                                ((dxR + diffRad) * (dxR + diffRad) + (dyR + diffRad) * (dyR + diffRad) < 0.01) ||
+                                                ((dxR - diffRad) * (dxR - diffRad) + (dyR + diffRad) * (dyR + diffRad) < 0.01) ||
+                                                ((dxR - diffRad) * (dxR - diffRad) + (dyR - diffRad) * (dyR - diffRad) < 0.01) ||
+                                                ((dxR + diffRad) * (dxR + diffRad) + (dyR - diffRad) * (dyR - diffRad) < 0.01)
+                                               )
+                        )
+                    {
+                        f.s[i * n + j] = 0.0;
+                        f.m[i * n + j] = 1.0;
+                        f.u[i * n + j] = vx;
+                        f.u[(i + 1) * n + j] = vx;
+                        f.v[i * n + j] = vy;
+                        f.v[i * n + j + 1] = vy;
 
+                    }
                     // ================ Песочные часы ========================================================================================================================
 
-                    else if (obstacle == 5 &&
+                    else if (_obstacle == 5 &&
                         ((dxR * dxR + dyR * dyR) * (dxR * dxR + dyR * dyR)) < (0.05 * (dxR * dxR - dyR * dyR)))
                     {
                         f.s[(i * n + j)] = 0.0;
@@ -166,7 +186,7 @@ namespace FluidWPF.Models
 
                     // ================ Сердце ===============================================================================================================================
 
-                    else if ( obstacle == 6 &&
+                    else if ( _obstacle == 6 &&
                         ((dxR * dxR + dyR * dyR - 0.01) * (dxR * dxR + dyR * dyR - 0.01) * (dxR * dxR + dyR * dyR - 0.01) - dxR * dxR * dyR * dyR * dyR < 0) )
                     {
                         f.s[(i * n + j)] = 0.0;
@@ -179,7 +199,7 @@ namespace FluidWPF.Models
 
                     // ================ Квадрат ===============================================================================================================================
 
-                    else if (obstacle == 1 &&
+                    else if (_obstacle == 1 &&
                         (Math.Pow(dxR, 50) + Math.Pow(dyR, 50) < Math.Pow(100, -20)))
                     {
                         f.s[(i * n + j)] = 0.0;
@@ -192,7 +212,7 @@ namespace FluidWPF.Models
 
                     // ================ Профиль крыла ==========================================================================================================================
 
-                    else if (obstacle == 2 &&
+                    else if (_obstacle == 8 &&
 
                     (((29 * (dyR + 0.02) * (dyR + 0.02) - 0.25) < dxR - 0.12 && dxR < -0.0442 && dyR > -0.029) ||
 
@@ -214,7 +234,7 @@ namespace FluidWPF.Models
 
                     // ================ Симметричный профвиль крыла ================================================================================================================
 
-                    else if (obstacle == 3 &&
+                    else if (_obstacle == 3 &&
 
                     (((60 * (dyR * dyR) - 0.263) < (dxR - 0.1245) && dxR < -0.0858) ||
 
@@ -236,7 +256,7 @@ namespace FluidWPF.Models
 
                     // ================ Чаша ======================================================================================================================================
 
-                    else if (obstacle == 4 && 
+                    else if (_obstacle == 4 && 
                         ((Math.Pow(dxR + 0.09, 2) + Math.Pow(dyR, 2) < 0.05) && (Math.Pow(dxR + 0.18, 2) + dyR * dyR > 0.06)) )
                     {
                         f.s[(i * n + j)] = 0.0;
@@ -249,7 +269,7 @@ namespace FluidWPF.Models
 
                     // ================ Синусоидальный тоннель =====================================================================================================================
 
-                    else if ( obstacle == 7 &&
+                    else if ( _obstacle == 7 &&
 
                     (((Math.Sin(30 * dxR) > 10 * dyR + 1) && dxR < 0.3 && dxR > -0.3 && dyR > -0.3) ||
 

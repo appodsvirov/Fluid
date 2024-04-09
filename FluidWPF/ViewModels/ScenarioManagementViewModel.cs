@@ -29,7 +29,13 @@ namespace FluidWPF.ViewModels
                     Dispatcher.Invoke(() => ScenarioItems.Add(e));
                     break;
                 case Enums.StatusRequeste.Update:
-                    Dispatcher.Invoke(() => ScenarioItems[e.Id].Completion = e.Completion); break;
+                    Dispatcher.Invoke(() => 
+                    {
+                        ScenarioItems[e.Id].Completion = e.Completion;
+                        ScenarioItems[e.Id].Time = e.Time;
+                    }
+                    );
+                    break;
             }
             
         }

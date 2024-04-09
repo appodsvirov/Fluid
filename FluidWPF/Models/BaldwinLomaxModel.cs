@@ -18,6 +18,8 @@ namespace FluidWPF.Models
         private double _density;
         private double _nu;
         private double _dy;
+        private Dictionary<(double, int), double> CashSolveMuInner = new Dictionary<(double, int), double>();
+        private Dictionary<(double, int), double> CashSolveMuOuter = new Dictionary<(double, int), double>();
 
         public BaldwinLomaxModel(Fluid fluid)
         {
@@ -30,17 +32,18 @@ namespace FluidWPF.Models
         public double SolveDynamicSpeed( double u1, double u2, int j, double[] u, double[] v)
         {
             double du = Math.Abs(u1 - u2);
-            double y = j; 
+            du = Math.Round(du, 5);
+            int y = j; 
             return Math.Sqrt(SolveTurbulentStress(du, y, u, v) / _density);
         }
 
         // закон Стейна и Рейна
-        private double SolveTurbulentStress(double du, double y, double[] u, double[] v)
+        private double SolveTurbulentStress(double du, int y, double[] u, double[] v)
         {
             return _density * SolveTurbulentViscosity(du, y, u, v) * du / _dy;
         }
 
-        private double SolveTurbulentViscosity(double du, double y, double[] u, double[] v)
+        private double SolveTurbulentViscosity(double du, int y, double[] u, double[] v)
         {
             //return SolveMuInner(du, y);
             double yCrossover = SolveYCrossover(du, u, v);
@@ -60,22 +63,31 @@ namespace FluidWPF.Models
         }
 
         // Формула Прандтля – Ван Дриста
-        private double SolveMuInner(double du, double y)
+        private double SolveMuInner(double du, int y)
         {
+            if(CashSolveMuInner.ContainsKey((du, y)))
+            {
+                return CashSolveMuInner[(du, y)];
+            }
             double AbsOmega = SolveAbsOmega(du);
             double l = SolveMixingLength(y, SolveYPlus(du, y));
-            return _density * l * l * AbsOmega;
+
+            var result = _density * l * l * AbsOmega;
+
+            CashSolveMuInner.Add((du, y), result);
+            return result;
         }
 
         //длина пути смешения Прандтля
-        private double SolveMixingLength(double y, double yPlus)
+        private double SolveMixingLength(int y, double yPlus)
         {
             return k * y * (1 - Math.Exp(-yPlus / APlus));
         }
-
-        private double SolveYPlus(double du, double y)
+        private double SolveYPlus(double du, int y)
         {
-            return y * Math.Sqrt(_density * (du / _dy) / _nu);
+
+            var result = y * Math.Sqrt(_density * (du / _dy) / _nu);
+            return result;
         }
 
         //функция завихренности скорости
@@ -87,12 +99,18 @@ namespace FluidWPF.Models
             return Math.Abs(du / _dy);
         }
 
-        private double SolveMuOuter(double du, double y, double[] u, double[] v)
+        private double SolveMuOuter(double du, int y, double[] u, double[] v)
         {
+            if (CashSolveMuOuter.ContainsKey((du, y)))
+            {
+                return CashSolveMuOuter[(du, y)];
+            }
             (double FMax, double YMax) = SolveFYMax(du);
-            return _density * K * CCp * FWake(FMax, YMax, u, v) * SolveFKleb(y, YMax);
+            var result = _density * K * CCp * FWake(FMax, YMax, u, v) * SolveFKleb(y, YMax);
+            CashSolveMuOuter.Add((du, y), result);
+            return result;
         }
-        private static double SolveFKleb(double y, double YMax)
+        private static double SolveFKleb(int y, double YMax)
         {
             return 1 / (1 + 5.5 * Math.Pow(CKleb * y / YMax, 6));
         }
@@ -103,21 +121,34 @@ namespace FluidWPF.Models
                 CWk * YMax * Math.Pow(SolveUDif(u, v), 2) / FMax);
         }
 
+        private Dictionary<double, (double, double)> CashSolveFYMax = new ();
         private (double, double) SolveFYMax(double du)
         {
+            if (CashSolveFYMax.ContainsKey(du))
+            {
+                return CashSolveFYMax[du];
+            }
             double YMax = double.MinValue;
             for(int i = 0; i < _numY; i++)
             {
                 var res = SolveFY(du, i);
                 if (res > YMax) YMax = res;
             }
-
-            return (SolveFY(du, YMax), YMax);
+            var result = (SolveFY(du, (int)YMax), YMax);
+            CashSolveFYMax.Add(du, result);
+            return result;
         }
 
-        private double SolveFY(double du, double y)
+        private Dictionary<(double, int), double> CashSolveFY = new();
+        private double SolveFY(double du, int y)
         {
-            return y * SolveAbsOmega(du) * (1 - Math.Exp(-SolveYPlus(du, _dy) / APlus));
+            if(CashSolveFY.ContainsKey((du, y)))
+            {
+                return CashSolveFY[(du, y)];
+            }
+            var result = y * SolveAbsOmega(du) * (1 - Math.Exp(-SolveYPlus(du, y) / APlus)); //_dy
+            CashSolveFY.Add((du, y), result);
+            return result;
         }
 
         private static double SolveUDif(double[] u, double[] v)

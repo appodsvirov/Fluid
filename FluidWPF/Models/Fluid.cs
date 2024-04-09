@@ -25,11 +25,12 @@ namespace FluidWPF.Models
         public double[] m;
         public double[] newM;
         public double num;
+        bool solveTurbulence = true;
 
         public double overRelaxation = 1.9;
 
         private BaldwinLomaxModel _turbulence;
-        public Fluid(int density, int numX, int numY, double h)
+        public Fluid(int density, int numX, int numY, double h, bool st)
         {
             this.density = density;
             this.numX = numX + 2;
@@ -44,7 +45,7 @@ namespace FluidWPF.Models
             this.s = new double[this.numCells];
             this.newM = new double[this.numCells];
             this.m = Enumerable.Repeat(1.0, this.numCells).ToArray();
-
+            this.solveTurbulence = st;
 
             num = numX * numY;
 
@@ -178,7 +179,7 @@ namespace FluidWPF.Models
             return val;
         }
 
-        public double AvgU(int i, int j, bool solveTurbulence = true)
+        public double AvgU(int i, int j)
         {
             var n = this.numY;
             var u = (this.u[(i * n + j - 1)] + this.u[(i * n + j)] +

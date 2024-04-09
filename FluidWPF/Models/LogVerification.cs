@@ -64,6 +64,19 @@ namespace FluidWPF.Models
             this.start = start;
         }
 
+        public LogVerification(int dlog, int start, (int, int) point)
+        {
+            sBPUp = new StringBuilder();
+            sBPDown = new StringBuilder();
+            sBMUp = new StringBuilder();
+            sBMDown = new StringBuilder();
+            sBUUp = new StringBuilder();
+            sBUDown = new StringBuilder();
+            this.dlog = dlog;
+            this.start = start;
+            pointUp = point;
+        }
+
         public void Log(double p1, double p2, double m1, double m2, double u1, double u2)
         {
             sBPUp.Append(p1).AppendLine();
