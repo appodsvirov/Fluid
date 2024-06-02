@@ -17,7 +17,7 @@
 
     <Grid>
         <TabControl>
-            <TabItem Header="Главное">
+            <TabItem Header="Верификация">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -260,6 +260,7 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
+            <TabItem Header="Визуализация" IsEnabled="False"/>
         </TabControl>
     </Grid>
 
