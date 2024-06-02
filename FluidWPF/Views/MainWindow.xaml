@@ -8,7 +8,8 @@
         xmlns:vm="clr-namespace:FluidWPF.ViewModels"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" WindowState="Maximized"
-        Title="MainWindow" Height="600" Width="1000">
+        Icon="pack://application:,,,/Resources/airport48.ico"
+        Title="Solver Fluid" Height="600" Width="1000">
 
     <Window.DataContext>
         <vm:MainViewModel/>
